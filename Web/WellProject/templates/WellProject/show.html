@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Show well detail</title>
+</head>
+<body>
+    <h2>Show well #{{well.id}} details</h2>
+    <h3>Well ID = {{well.id}} - Name: {{well.name}}</h3><br>
+    <h3>** Coordinates **</h3>
+    <div style="margin-left:10px">
+        <table>
+            <tr>
+                <th>X</th>
+                <th>Y</th>
+                <th>Z</th>
+            </tr>
+            {% for coords in well.Coordinate %}
+            <tr>
+                <td>{{ coords.x }}</td>
+                <td>{{ coords.y }}</td>
+                <td>{{ coords.z }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<h1>Well Project</h1>
+
+<h2>List of wells ({{wells|length}} - Wells in the list)</h2>
+{% for well in wells %}
+    <h3><a href="{% url 'show' well.id%}">#{{well.id}} - {{well.name|upper}}</a></h3>
+    <div style="margin-left:20px">
+        <h3>** Coordinates **</h3>
+        <div style="margin-left:10px">
+            <table>
+                <tr>
+                    <th>X</th>
+                    <th>Y</th>
+                    <th>Z</th>
+                </tr>
+<!--                {% for coords in well.Coordinate %}-->
+<!--                <tr>-->
+<!--                    <td>{{ coords.x }}</td>-->
+<!--                    <td>{{ coords.y }}</td>-->
+<!--                    <td>{{ coords.z }}</td>-->
+<!--                </tr>-->
+<!--                {% endfor %}-->
+                {% with well.Coordinate|first as coords %}
+                <tr>
+                    <td>{{ coords.x }}</td>
+                    <td>{{ coords.y }}</td>
+                    <td>{{ coords.z }}</td>
+                </tr>
+                {% endwith %}
+            </table>
+            <p>... and remain more points ({{ well.Coordinate|length }})</p>
+            <p><a href="{% url 'show' well.id%}">Show all coordinates</a></p>
+        </div>
+    </div>
+    {% if not forloop.last %}
+    <hr>
+    {% endif %}
+{% empty %}
+    <p>Sorry, no well in the list.</p>
+{% endfor %}
+
