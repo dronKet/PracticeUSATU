@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Show well detail</title>
-</head>
-<body>
+{% extends 'layouts/base.html' %}
+
+{% block title %}Well | {{well.name}}{% endblock %}
+
+{% block content %}
     <h2>Show well #{{well.id}} details</h2>
     <h3>Well ID = {{well.id}} - Name: {{well.name}}</h3><br>
     <h3>** Coordinates **</h3>
@@ -15,14 +13,17 @@
                 <th>Y</th>
                 <th>Z</th>
             </tr>
-            {% for coords in well.Coordinate %}
+            {% for x, y, z in coords %}
             <tr>
-                <td>{{ coords.x }}</td>
-                <td>{{ coords.y }}</td>
-                <td>{{ coords.z }}</td>
+                <td>{{ x }}</td>
+                <td>{{ y }}</td>
+                <td>{{ z }}</td>
             </tr>
             {% endfor %}
         </table>
     </div>
-</body>
-</html>
+
+    <hr>
+
+    <p><a href="{% url 'index' %}">All Wells</a></p>
+{% endblock %}

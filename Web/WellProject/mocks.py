@@ -1,4 +1,5 @@
 from django.http import Http404
+from numpy import random
 
 
 class Well:
@@ -6,65 +7,32 @@ class Well:
         {
             'id': 1,
             'name': 'First Well',
-            'Coordinate': [
+            'Coordinate':
                 {
-                    'x': 10,
-                    'y': 10,
-                    'z': 10,
-                },
-                {
-                    'x': 20,
-                    'y': 20,
-                    'z': 20,
-                },
-                {
-                    'x': 30,
-                    'y': 30,
-                    'z': 30,
-                },
-            ]
+                    'x': random.randint(10, size=10),
+                    'y': random.randint(10, size=10),
+                    'z': random.randint(10, size=10),
+                }
         },
         {
             'id': 2,
             'name': 'Second Well',
-            'Coordinate': [
+            'Coordinate':
                 {
-                    'x': 11,
-                    'y': 11,
-                    'z': 11,
+                    'x': random.randint(10, size=10),
+                    'y': random.randint(10, size=10),
+                    'z': random.randint(10, size=10),
                 },
-                {
-                    'x': 21,
-                    'y': 21,
-                    'z': 21,
-                },
-                {
-                    'x': 31,
-                    'y': 31,
-                    'z': 31,
-                },
-            ]
         },
         {
             'id': 3,
             'name': 'Third Well',
-            'Coordinate': [
+            'Coordinate':
                 {
-                    'x': 12,
-                    'y': 12,
-                    'z': 12,
+                    'x': random.randint(10, size=10),
+                    'y': random.randint(10, size=10),
+                    'z': random.randint(10, size=10),
                 },
-                {
-                    'x': 22,
-                    'y': 22,
-                    'z': 22,
-                },
-                {
-                    'x': 32,
-                    'y': 32,
-                    'z': 32,
-                },
-            ]
         },
     ]
 
@@ -77,4 +45,4 @@ class Well:
         try:
             return cls.wells[int(id) - 1]
         except:
-            raise Http404('Error 404')
+            raise Http404('Sorry, information about well #{} not found'.format(id))
