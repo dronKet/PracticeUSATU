@@ -1,24 +1,22 @@
-def file_reading(filename, database):
-    filepath = "deviation/" + filename + ".dev"
-    coord_list = []
-    with open(filepath, mode='r') as f:
+import numpy as np
+import sys
+from PyQt5.QtWidgets import QFileDialog, QApplication
+
+def file_reading(files):
+    data = {}
+    for filename in argv:
+        filepath = "deviation/" + filename + ".dev"
+        f = open(filepath, mode='r')
         for i in range(12):
             line = f.readline()
-            if i == 1:
-                name = line.split()[len(line.split()) - 1]
-        while 1:
-            line = f.readline()
-            if line == "":
-                break
-            coord = [float(x) for x in line.split()]
-            coord_list.append(coord)
-        database[name] = database.get(name, coord_list)
+            if i == 2:
+                name = line.split()[3]
+                print(name)
+        Z = np.array([np.array([float(line.split()[1]), float(line.split()[2]), float(line.split()[3])]) for line in f.readlines()])
+        data[filename] = Z
+    return data
 
-database = {}
-while 1:
-    filename = input()
-    if filename == '.':
-        break
-    file_reading(filename, database)
-for name in database:
-    print(name, database[name])
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    files = QFileDialog.getOpenFileNames(None, "Выберите файлы:", "", "Text files (*.dev)")
+    sys.exit(app.exec_())
