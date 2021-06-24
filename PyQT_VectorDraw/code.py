@@ -12,7 +12,6 @@ class Example(Interface):
     def __init__(self):
         super().__init__()
         self.is_drawing = True
-        self.line_color = QColor(0, 0, 0)
         self.choosed_shape = {"rect": 0, "triang": 0, "ellips": 0}
         self.coordinates_shapes = list()
         self.pix = QPixmap(self.rect().size())
@@ -23,25 +22,14 @@ class Example(Interface):
         self.show()
 
     def add_functions(self):
-       # self.btn_triang.clicked.connect(lambda: self.choose_shape("triang"))
-       # self.btn_rect.clicked.connect(lambda: self.choose_shape("rect"))
-       # self.btn_ellips.clicked.connect(lambda: self.choose_shape("ellips"))
-       # self.btn_color_red.clicked.connect(lambda: self.set_color(QColor(255, 0, 0)))
-       # self.btn_color_black.clicked.connect(lambda: self.set_color(QColor(0, 0, 0)))
-       # self.btn_color_brush_red.clicked.connect(lambda: self.set_color(QColor(0, 0, 0)))
-      #  self.btn_color_brush_black.clicked.connect(lambda: self.set_color(QColor(0, 0, 0)))
         self.actionRectangle.triggered.connect(lambda: self.choose_shape("rect"))
         self.actionEllips.triggered.connect(lambda: self.choose_shape("ellips"))
-        self.actionPaletteLine.triggered.connect(self.colorDialog)
-        self.actionPaletteLine.triggered.connect(self.colorDialog)
+        self.actionPaletteLine.triggered.connect(self.lineColorDialog)
+        self.actionPaletteBrush.triggered.connect(self.brushColorDialog)
 
     def distinguish(self):
         self.is_drawing =False
         #self.pix = QPixmap(self.rect().size())
-
-    def set_color(self,color):
-        print(color)
-        self.line_color=color
 
     def choose_shape(self, shape):
         self.is_drawing=True
@@ -89,13 +77,27 @@ class Example(Interface):
             self.update()
 
     def mouseMoveEvent(self, event):
-        #print(self.is_drawing)
         if event.buttons() & Qt.LeftButton and self.is_drawing:
             self.destination = event.pos()
             self.update()
 
-    def colorDialog(self):
-        self.line_color=QColorDialog.getColor()
+    def lineColorDialog(self):
+        color=QColorDialog.getColor()
+        self.line_color=color
+        icon_pix=QPixmap(self.rect().size())
+        icon_pix.fill(color)
+        self.icon2.addPixmap(QtGui.QPixmap(icon_pix), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionPaletteLine.setIcon(self.icon2)
+
+    def brushColorDialog(self):
+        color=QColorDialog.getColor()
+        print(color)
+        self.brush_color=color
+        icon_pix=QPixmap(self.rect().size())
+        icon_pix.fill( color)
+        self.icon3.addPixmap(QtGui.QPixmap(icon_pix), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionPaletteBrush.setIcon(self.icon3)
+
 
     def mouseReleaseEvent(self, event):
         if event.button() & Qt.LeftButton:

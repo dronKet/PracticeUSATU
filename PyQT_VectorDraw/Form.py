@@ -7,6 +7,8 @@ import Resources.Icons
 class Interface(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.brush_color = QColor(255, 255, 255)
+        self.line_color = QColor(0, 0, 0)
         self.window_width, self.window_height = 800, 480
         self.setMinimumSize(self.window_width, self.window_height)
         self.centralwidget = QtWidgets.QWidget(self)
@@ -29,26 +31,25 @@ class Interface(QMainWindow):
         icon.addPixmap(QtGui.QPixmap(":/ToolBar/ellips.PNG"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionEllips.setIcon(icon)
         self.actionEllips.setObjectName("actionEllips")
+
         self.actionRectangle = QtWidgets.QAction(self)
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/ToolBar/rect.PNG"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-
         self.actionRectangle.setIcon(icon1)
         self.actionRectangle.setObjectName("actionRectangle")
 
+        icon_pix = QPixmap(self.rect().size())
         self.actionPaletteLine = QtWidgets.QAction(self)
-        icon2 = QtGui.QIcon()
-        path="C:\\Users\\Динар\\Desktop\\Game_View\\photos\\pallite.PNG"
-        icon2.addPixmap(QtGui.QPixmap(path), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionPaletteLine.setIcon(icon2)
+        self.icon2 = QtGui.QIcon()
+        self.icon2.addPixmap(QtGui.QPixmap(icon_pix), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionPaletteLine.setIcon(self.icon2)
         self.actionPaletteLine.setObjectName("actionPalette")
 
         self.actionPaletteBrush = QtWidgets.QAction(self)
-        icon2 = QtGui.QIcon()
-        path="C:\\Users\\Динар\\Desktop\\Game_View\\photos\\pallite.PNG"
-        icon2.addPixmap(QtGui.QPixmap(path), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionPaletteBrush.setIcon(icon2)
-        self.actionPaletteBrush.setObjectName("actionPalette")
+        self.icon3 = QtGui.QIcon()
+        self.icon3.addPixmap(QtGui.QPixmap(icon_pix), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionPaletteBrush.setIcon(self.icon3)
+        self.actionPaletteBrush.setObjectName("highlight")
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.toolBar.addAction(self.actionEllips)
