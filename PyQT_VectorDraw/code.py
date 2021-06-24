@@ -12,6 +12,7 @@ class Example(Interface):
         super().__init__()
         self.is_drawing = True
         self.is_choose_mode = False
+        self.is_fill_mode=False
         self.choosed_shape = {"rect": 0, "triang": 0, "ellips": 0}
         self.coordinates_shapes = list()
         self.pix = QPixmap(self.rect().size())
@@ -26,12 +27,14 @@ class Example(Interface):
         self.actionEllips.triggered.connect(lambda: self.choose_shape("ellips"))
         self.actionPaletteLine.triggered.connect(self.lineColorDialog)
         self.actionPaletteBrush.triggered.connect(self.brushColorDialog)
-        self.actionChooseShape.triggered.connect(self.ChooseShape)
+       # self.actionChooseShape.triggered.connect(self.ChooseShape)
         self.actionCleanWindow.triggered.connect(self.CleanWindow)
 
     def CleanWindow(self):
         self.pix.fill(Qt.white)
         self.update()
+        self.count_shapes = 0
+        self.coordinates_shapes.clear()
 
     def ChooseShape(self):
         self.is_drawing = False
@@ -46,37 +49,36 @@ class Example(Interface):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.begin(self)
         painter.setPen(self.line_color)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.drawPixmap(QPoint(), self.pix)
-        if not self.begin.isNull() and not self.destination.isNull() and self.is_drawing:
-            rect = QRect(self.begin, self.destination)
-            if self.choosed_shape["rect"] == 1:
-                painter.drawRect(rect.normalized())
-            elif self.choosed_shape["ellips"] == 1:
-                painter.drawEllipse(rect.normalized())
-
-        painter.end()
+        if self.is_drawing:
+            if not self.begin.isNull() and not self.destination.isNull():
+                rect = QRect(self.begin, self.destination)
+                if self.choosed_shape["rect"] == 1:
+                    painter.drawRect(rect.normalized())
+                elif self.choosed_shape["ellips"] == 1:
+                    painter.drawEllipse(rect.normalized())
 
     def mousePressEvent(self, event):
         if event.buttons() & Qt.LeftButton:
             self.begin = event.pos()
             self.destination = event.pos()
-            ''' if self.is_choose_mode:
+            if self.is_fill_mode:
                 for dots in self.coordinates_shapes:
-                    # if QRect(dots[1],dots[2])<QRect(self.begin,self.destination):
-                    if dots[1] > self.begin and dots[2] < self.destination:
-                        painter = QPainter(self)
-                        painter.drawPixmap(QPoint(), self.pix)
-                        if not self.begin.isNull() and not self.destination.isNull():
-                            rect = QRect(self.begin, self.destination)
-                            if self.coordinates_shapes[0] == "rect":
-                                painter.drawRect(rect.normalized())
-                            elif self.coordinates_shapes[0] == "ellips":
-                                painter.drawEllipse(rect.normalized())
-                        break'''
+                    if dots[1].x() < self.begin.x() and dots[1].y() < self.begin.y() and dots[
+                            2].x() > self.destination.x() and dots[2].y() > self.destination.y():
 
+                            painter = QPainter(self.pix)
+                          #  painter.drawPixmap(QPoint(), self.pix)
+                            painter.setBrush(self.brush_color)
+                            rect = QRect(dots[1], dots[2])
+                            if dots[0] == "rect":
+                                print("ok")
+                                painter.drawRect(rect.normalized())
+                            elif dots[0] == "ellips":
+                                painter.drawEllipse(rect.normalized())
+                            break
             self.update()
 
     def mouseMoveEvent(self, event):
@@ -95,6 +97,8 @@ class Example(Interface):
     def brushColorDialog(self):
         color = QColorDialog.getColor()
         print(color)
+        self.is_drawing=False
+        self.is_fill_mode=True
         self.brush_color = color
         icon_pix = QPixmap(self.rect().size())
         icon_pix.fill(color)
@@ -107,15 +111,16 @@ class Example(Interface):
             painter = QPainter(self.pix)
             painter.setPen(self.line_color)
             painter.setRenderHint(QPainter.Antialiasing)
-            if self.choosed_shape["rect"] == 1:
-                painter.drawRect(rect.normalized())
-                self.coordinates_shapes.append(["rect", self.begin, self.destination])
-            elif self.choosed_shape["ellips"] == 1:
-                painter.drawEllipse(rect.normalized())
-                self.coordinates_shapes.append(["ellips", self.begin, self.destination])
+            if self.is_drawing:
+                if self.choosed_shape["rect"] == 1:
+                    painter.drawRect(rect.normalized())
+                    self.coordinates_shapes.append(["rect", self.begin, self.destination])
+                elif self.choosed_shape["ellips"] == 1:
+                    painter.drawEllipse(rect.normalized())
+                    self.coordinates_shapes.append(["ellips", self.begin, self.destination])
+                self.count_shapes += 1
             # print(self.coordinates_shapes)
             self.begin, self.destination = QPoint(), QPoint()
-            self.count_shapes += 1
             self.update()
 
 
