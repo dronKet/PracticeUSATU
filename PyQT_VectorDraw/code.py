@@ -27,7 +27,11 @@ class Example(Interface):
         self.actionPaletteLine.triggered.connect(self.lineColorDialog)
         self.actionPaletteBrush.triggered.connect(self.brushColorDialog)
         self.actionChooseShape.triggered.connect(self.ChooseShape)
+        self.actionCleanWindow.triggered.connect(self.CleanWindow)
 
+    def CleanWindow(self):
+        self.pix.fill(Qt.white)
+        self.update()
 
     def ChooseShape(self):
         self.is_drawing = False
