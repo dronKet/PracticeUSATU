@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="ToolBar">
+    <file>ellips.PNG</file>
+    <file>palitra.jpg</file>
+    <file>rect.PNG</file>
+  </qresource>
+</RCC>
