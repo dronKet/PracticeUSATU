@@ -4,7 +4,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QOpenGLWidget , QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton,QColorDialog
 from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect
-
 from Form import Interface
 
 
@@ -26,6 +25,7 @@ class Example(Interface):
         self.actionEllips.triggered.connect(lambda: self.choose_shape("ellips"))
         self.actionPaletteLine.triggered.connect(self.lineColorDialog)
         self.actionPaletteBrush.triggered.connect(self.brushColorDialog)
+
 
     def distinguish(self):
         self.is_drawing =False

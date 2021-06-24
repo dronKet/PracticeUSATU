@@ -1,5 +1,11 @@
 <RCC>
   <qresource prefix="ToolBar">
+    <file>choose.PNG</file>
+    <file>copy.png</file>
+    <file>cut.png</file>
+    <file>del.png</file>
+    <file>move.png</file>
+    <file>brush.png</file>
     <file>ellips.PNG</file>
     <file>palitra.jpg</file>
     <file>rect.PNG</file>

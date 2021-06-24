@@ -1,8 +1,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QOpenGLWidget , QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton,QMainWindow
+from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow, QLabel
 from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect
 import Resources.Icons
+
 
 class Interface(QMainWindow):
     def __init__(self):
@@ -51,10 +52,28 @@ class Interface(QMainWindow):
         self.actionPaletteBrush.setIcon(self.icon3)
         self.actionPaletteBrush.setObjectName("highlight")
 
+        icon_pix.fill(QColor(125, 125, 125))
+        label = QLabel()
+        label.setText("haha")
+        label.setPixmap(icon_pix)
+        #icon_pix
+        self.actionChooseShape = QtWidgets.QAction(self)
+        self.icon4 = QtGui.QIcon()
+        self.icon4.addPixmap(QtGui.QPixmap(":/Resources/choose.PNG"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionChooseShape.setIcon(self.icon4)
+        self.actionChooseShape.setObjectName("highlight")
+
+        self.actionBrushShape = QtWidgets.QAction(self)
+        self.brushIcon = QtGui.QIcon()
+        self.brushIcon.addPixmap(QtGui.QPixmap(":/ToolBar/choose.PNG"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionBrushShape.setIcon(self.brushIcon)
+        self.actionBrushShape.setObjectName("brushShape")
+
         self.menubar.addAction(self.menuFile.menuAction())
         self.toolBar.addAction(self.actionEllips)
         self.toolBar.addAction(self.actionRectangle)
         self.toolBar.addAction(self.actionPaletteLine)
         self.toolBar.addAction(self.actionPaletteBrush)
+        self.toolBar.addAction(self.actionBrushShape)
         layout = QVBoxLayout()
         self.setLayout(layout)
