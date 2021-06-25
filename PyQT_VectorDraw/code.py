@@ -60,8 +60,6 @@ class MainWindowLogic(QMainWindow):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-       # painter.setPen(self.line_color)
-       # painter.setRenderHint(QPainter.Antialiasing)
         painter.drawPixmap(QPoint(), self.main_area)
         painter.drawPixmap(QPoint(), self.external_area)
 
@@ -118,21 +116,6 @@ class MainWindowLogic(QMainWindow):
         if event.button() & Qt.LeftButton:
             if self.is_drawing:
                 self.control.mouse_release_handler(event)
-            ''' rect = QRect(self.begin, self.destination)
-                painter = QPainter(self.pix)
-                painter.setPen(self.line_color)
-                painter.setRenderHint(QPainter.Antialiasing)
-                if self.is_drawing
-                    if self.choosed_shape[rect] == 1
-                        painter.drawRect(rect.normalized())
-                        self.coordinates_shapes.append([rect, self.begin, self.destination])
-                    elif self.choosed_shape[ellips] == 1
-                        painter.drawEllipse(rect.normalized())
-                        self.coordinates_shapes.append([ellips, self.begin, self.destination])
-                    self.count_shapes += 1
-                # print(self.coordinates_shapes)
-               # self.begin, self.destination = QPoint(), QPoint()
-                self.update()'''
 
 
 class Controller:
@@ -192,25 +175,6 @@ class ControllerShape(Controller):
             self.main_window.coordinates_shapes.append(["rect", self.begin, self.destination])
         self.main_window.count_shapes += 1
 
-
-class ControllerFill(Controller):
-    def mouse_press_handler(self, event):
-        self.begin = event.pos()
-        self.destination = event.pos()
-        painter = QPainter(self.main_window.main_area)
-        painter.drawPixmap(QPoint(), self.main_window.main_area)
-        painter.setPen(self.main_window.line_color)
-        painter.setBrush(self.main_window.brush_color)
-        for dots in self.main_window.coordinates_shapes:
-            if dots[1].x()<self.begin.x() and dots[1].y()<self.begin.y() and dots[2].x()>self.destination.x() and dots[2].y()>self.destination.y():
-                rect = QRect(dots[1], dots[2])
-                if dots[0] == "rect":
-                    print("ok")
-                    painter.drawRect(rect.normalized())
-                elif dots[0] == "ellips":
-                    painter.drawEllipse(rect.normalized())
-                break
-        self.main_window.update
 
 if __name__ == "__main__":
     import sys
