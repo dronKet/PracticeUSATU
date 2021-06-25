@@ -1,8 +1,7 @@
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QColorDialog, \
-    QMainWindow
+from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QColorDialog, QMainWindow
 from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect
 from Form import Ui_MainWindow
@@ -11,6 +10,7 @@ from Form import Ui_MainWindow
 class MainWindowLogic(QMainWindow):
     def __init__(self, form):
         super().__init__()
+        self.control = ControllerShape(self)
         self.brush_color = QColor(255, 255, 255)
         self.line_color = QColor(0, 0, 0)
         self.ui = form
@@ -20,8 +20,13 @@ class MainWindowLogic(QMainWindow):
         self.is_fill_mode = False
         self.choosed_shape = {"rect": 0, "triang": 0, "ellips": 0}
         self.coordinates_shapes = list()
-        self.pix = QPixmap(self.rect().size())
-        self.pix.fill(Qt.white)
+
+        self.main_area = QPixmap(self.rect().size())
+        self.main_area.fill(Qt.white)
+
+        self.external_area = QPixmap(self.rect().size())
+        self.external_area.fill(QColor(0, 0, 0, 0))
+
         self.begin, self.destination = QPoint(), QPoint()
         self.add_functions()
         self.count_shapes = 0
@@ -36,7 +41,8 @@ class MainWindowLogic(QMainWindow):
         self.ui.actionCleanWindow.triggered.connect(self.CleanWindow)
 
     def CleanWindow(self):
-        self.pix.fill(Qt.white)
+        self.main_area.fill(Qt.white)
+        self.external_area.fill(Qt.white)
         self.update()
         self.count_shapes = 0
         self.coordinates_shapes.clear()
@@ -54,44 +60,40 @@ class MainWindowLogic(QMainWindow):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setPen(self.line_color)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.drawPixmap(QPoint(), self.pix)
-        if self.is_drawing:
-            if not self.begin.isNull() and not self.destination.isNull():
-                rect = QRect(self.begin, self.destination)
-                if self.choosed_shape["rect"] == 1:
-                    painter.drawRect(rect.normalized())
-                elif self.choosed_shape["ellips"] == 1:
-                    painter.drawEllipse(rect.normalized())
+       # painter.setPen(self.line_color)
+       # painter.setRenderHint(QPainter.Antialiasing)
+        painter.drawPixmap(QPoint(), self.main_area)
+        painter.drawPixmap(QPoint(), self.external_area)
 
     def mousePressEvent(self, event):
+       # fill_control=ControllerFill(self)
         if event.buttons() & Qt.LeftButton:
-            self.begin = event.pos()
-            self.destination = event.pos()
-            if self.is_fill_mode:
-                for dots in self.coordinates_shapes:
-                    if dots[1].x() < self.begin.x() and dots[1].y() < self.begin.y() and dots[
-                        2].x() > self.destination.x() and dots[2].y() > self.destination.y():
-
-                        painter = QPainter(self.pix)
-                        #  painter.drawPixmap(QPoint(), self.pix)
-                        painter.setBrush(self.brush_color)
-                        rect = QRect(dots[1], dots[2])
-                        if dots[0] == "rect":
-                            print("ok")
-                            painter.drawRect(rect.normalized())
-                        elif dots[0] == "ellips":
-                            painter.drawEllipse(rect.normalized())
-                        break
-            self.update()
-
+            if self.is_drawing:
+                print("ok")
+                self.control.mouse_press_handler(event)
+            elif self.is_fill_mode:
+              #  fill_control.mouse_press_handler(event)
+                self.begin = event.pos()
+                self.destination = event.pos()
+                if self.is_fill_mode:
+                    for dots in self.coordinates_shapes:
+                        if dots[1].x() < self.begin.x() and dots[1].y() < self.begin.y() and dots[
+                            2].x() > self.destination.x() and dots[2].y() > self.destination.y():
+                            painter = QPainter(self.main_area)
+                            #  painter.drawPixmap(QPoint(), self.pix)
+                            painter.setBrush(self.brush_color)
+                            rect = QRect(dots[1], dots[2])
+                            if dots[0] == "rect":
+                                #print(ok)
+                                painter.drawRect(rect.normalized())
+                            elif dots[0] == "ellips":
+                                painter.drawEllipse(rect.normalized())
+                            break
+                self.update()
 
     def mouseMoveEvent(self, event):
         if event.buttons() & Qt.LeftButton and self.is_drawing:
-            self.destination = event.pos()
-            self.update()
-
+            self.control.mouse_move_handler(event)
 
     def lineColorDialog(self):
         color = QColorDialog.getColor()
@@ -100,7 +102,6 @@ class MainWindowLogic(QMainWindow):
         icon_pix.fill(color)
         self.ui.icon2.addPixmap(QtGui.QPixmap(icon_pix), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.ui.actionPaletteLine.setIcon(self.ui.icon2)
-
 
     def brushColorDialog(self):
         color = QColorDialog.getColor()
@@ -113,27 +114,103 @@ class MainWindowLogic(QMainWindow):
         self.ui.icon3.addPixmap(QtGui.QPixmap(icon_pix), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.ui.actionPaletteBrush.setIcon(self.ui.icon3)
 
-
     def mouseReleaseEvent(self, event):
         if event.button() & Qt.LeftButton:
-            rect = QRect(self.begin, self.destination)
-            painter = QPainter(self.pix)
-            painter.setPen(self.line_color)
-            painter.setRenderHint(QPainter.Antialiasing)
             if self.is_drawing:
-                if self.choosed_shape["rect"] == 1:
+                self.control.mouse_release_handler(event)
+            ''' rect = QRect(self.begin, self.destination)
+                painter = QPainter(self.pix)
+                painter.setPen(self.line_color)
+                painter.setRenderHint(QPainter.Antialiasing)
+                if self.is_drawing
+                    if self.choosed_shape[rect] == 1
+                        painter.drawRect(rect.normalized())
+                        self.coordinates_shapes.append([rect, self.begin, self.destination])
+                    elif self.choosed_shape[ellips] == 1
+                        painter.drawEllipse(rect.normalized())
+                        self.coordinates_shapes.append([ellips, self.begin, self.destination])
+                    self.count_shapes += 1
+                # print(self.coordinates_shapes)
+               # self.begin, self.destination = QPoint(), QPoint()
+                self.update()'''
+
+
+class Controller:
+    def __init__(self, window):
+        self.main_window = window
+        #self.main_surface = window.drawing_surface
+        self.begin = QPoint()
+        self.destination = QPoint()
+
+    def mouse_press_handler(self, event):
+        pass
+
+    def mouse_move_handler(self, event):
+        pass
+
+    def mouse_release_handler(self, event):
+        pass
+
+
+class ControllerShape(Controller):
+    def draw_shape(self):
+        self.main_window.external_area.fill(QColor(0,0,0,0))
+        painter = QPainter(self.main_window.external_area)
+        painter.setPen(self.main_window.line_color)
+        painter.setRenderHint(QPainter.Antialiasing)
+        rect = QRect(self.begin, self.destination)
+        if self.main_window.choosed_shape["rect"] == 1:
+            painter.drawRect(rect.normalized())
+        elif self.main_window.choosed_shape["ellips"] == 1:
+            painter.drawEllipse(rect.normalized())
+       # painter.drawRect(rect.normalized())
+        self.main_window.update()
+
+    def mouse_press_handler(self, event):
+        self.begin = event.pos()
+        self.destination = event.pos()
+
+        self.draw_shape()
+
+    def mouse_move_handler(self, event):
+        self.destination = event.pos()
+        self.draw_shape()
+
+
+    def mouse_release_handler(self, event):
+        self.destination = event.pos()
+        painter = QPainter(self.main_window.main_area)
+        painter.drawPixmap(QPoint(), self.main_window.main_area)
+        painter.setPen(self.main_window.line_color)
+        painter.setRenderHint(QPainter.Antialiasing)
+        rect = QRect(self.begin, self.destination)
+        if self.main_window.choosed_shape["ellips"] == 1:
+            painter.drawEllipse(rect.normalized())
+            self.main_window.coordinates_shapes.append(["ellips", self.begin, self.destination])
+        elif self.main_window.choosed_shape["rect"] == 1:
+            painter.drawRect(rect.normalized())
+            self.main_window.coordinates_shapes.append(["rect", self.begin, self.destination])
+        self.main_window.count_shapes += 1
+
+
+class ControllerFill(Controller):
+    def mouse_press_handler(self, event):
+        self.begin = event.pos()
+        self.destination = event.pos()
+        painter = QPainter(self.main_window.main_area)
+        painter.drawPixmap(QPoint(), self.main_window.main_area)
+        painter.setPen(self.main_window.line_color)
+        painter.setBrush(self.main_window.brush_color)
+        for dots in self.main_window.coordinates_shapes:
+            if dots[1].x()<self.begin.x() and dots[1].y()<self.begin.y() and dots[2].x()>self.destination.x() and dots[2].y()>self.destination.y():
+                rect = QRect(dots[1], dots[2])
+                if dots[0] == "rect":
+                    print("ok")
                     painter.drawRect(rect.normalized())
-                    self.coordinates_shapes.append(["rect", self.begin, self.destination])
-                elif self.choosed_shape["ellips"] == 1:
+                elif dots[0] == "ellips":
                     painter.drawEllipse(rect.normalized())
-                    self.coordinates_shapes.append(["ellips", self.begin, self.destination])
-                self.count_shapes += 1
-            # print(self.coordinates_shapes)
-            self.begin, self.destination = QPoint(), QPoint()
-            self.update()
-
-
-
+                break
+        self.main_window.update
 
 if __name__ == "__main__":
     import sys
