@@ -1,9 +1,10 @@
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QColorDialog, QMainWindow
+from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QColorDialog, \
+    QMainWindow
 from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap
-from PyQt5.QtCore import Qt, QPoint, QRect
+from PyQt5.QtCore import Qt, QPoint, QRect, QLineF
 from Form import Ui_MainWindow
 
 
@@ -18,7 +19,7 @@ class MainWindowLogic(QMainWindow):
         self.is_drawing = True
         self.is_choose_mode = False
         self.is_fill_mode = False
-        self.choosed_shape = {"rect": 0, "triang": 0, "ellips": 0}
+        self.choosed_shape = {"rect": 0, "triang": 0, "ellips": 0, "line": 0}
         self.coordinates_shapes = list()
 
         self.main_area = QPixmap(self.rect().size())
@@ -39,6 +40,7 @@ class MainWindowLogic(QMainWindow):
         self.ui.actionPaletteBrush.triggered.connect(self.brushColorDialog)
         # self.actionChooseShape.triggered.connect(self.ChooseShape)
         self.ui.actionCleanWindow.triggered.connect(self.CleanWindow)
+        self.ui.lineAction.triggered.connect(lambda: self.choose_shape("line"))
 
     def CleanWindow(self):
         self.main_area.fill(Qt.white)
@@ -64,13 +66,13 @@ class MainWindowLogic(QMainWindow):
         painter.drawPixmap(QPoint(), self.external_area)
 
     def mousePressEvent(self, event):
-       # fill_control=ControllerFill(self)
+        # fill_control=ControllerFill(self)
         if event.buttons() & Qt.LeftButton:
             if self.is_drawing:
                 print("ok")
                 self.control.mouse_press_handler(event)
             elif self.is_fill_mode:
-              #  fill_control.mouse_press_handler(event)
+                #  fill_control.mouse_press_handler(event)
                 self.begin = event.pos()
                 self.destination = event.pos()
                 if self.is_fill_mode:
@@ -82,7 +84,7 @@ class MainWindowLogic(QMainWindow):
                             painter.setBrush(self.brush_color)
                             rect = QRect(dots[1], dots[2])
                             if dots[0] == "rect":
-                                #print(ok)
+                                # print(ok)
                                 painter.drawRect(rect.normalized())
                             elif dots[0] == "ellips":
                                 painter.drawEllipse(rect.normalized())
@@ -121,7 +123,7 @@ class MainWindowLogic(QMainWindow):
 class Controller:
     def __init__(self, window):
         self.main_window = window
-        #self.main_surface = window.drawing_surface
+        # self.main_surface = window.drawing_surface
         self.begin = QPoint()
         self.destination = QPoint()
 
@@ -137,16 +139,18 @@ class Controller:
 
 class ControllerShape(Controller):
     def draw_shape(self):
-        self.main_window.external_area.fill(QColor(0,0,0,0))
+        self.main_window.external_area.fill(QColor(0, 0, 0, 0))
         painter = QPainter(self.main_window.external_area)
         painter.setPen(self.main_window.line_color)
         painter.setRenderHint(QPainter.Antialiasing)
         rect = QRect(self.begin, self.destination)
+        # line = QLineF(self.begin.x(),self.begin.y(), self.destination.x(),self.destination.y())
         if self.main_window.choosed_shape["rect"] == 1:
             painter.drawRect(rect.normalized())
         elif self.main_window.choosed_shape["ellips"] == 1:
             painter.drawEllipse(rect.normalized())
-       # painter.drawRect(rect.normalized())
+        elif self.main_window.choosed_shape["line"] == 1:
+            painter.drawLine(self.begin, self.destination)
         self.main_window.update()
 
     def mouse_press_handler(self, event):
@@ -158,7 +162,6 @@ class ControllerShape(Controller):
     def mouse_move_handler(self, event):
         self.destination = event.pos()
         self.draw_shape()
-
 
     def mouse_release_handler(self, event):
         self.destination = event.pos()
@@ -173,6 +176,8 @@ class ControllerShape(Controller):
         elif self.main_window.choosed_shape["rect"] == 1:
             painter.drawRect(rect.normalized())
             self.main_window.coordinates_shapes.append(["rect", self.begin, self.destination])
+        elif self.main_window.choosed_shape["line"] == 1:
+            painter.drawLine(self.begin, self.destination)
         self.main_window.count_shapes += 1
 
 
