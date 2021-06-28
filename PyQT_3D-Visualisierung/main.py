@@ -1,10 +1,11 @@
 import sys
 import numpy as np
-from PyQt5.QtWidgets import QFileDialog, QApplication
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow
 
 def file_reading(files):
     data = {}
-    for file in files[0]:
+    for file in files:
         f = open(file, mode='r')
         array_list = []
         for linenum, line in enumerate(f.readlines()):
@@ -22,6 +23,10 @@ def file_reading(files):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    files = QFileDialog.getOpenFileNames(None, "Выберите файлы:", "", "Text files (*.dev)")
-    print(file_reading(files))
+    window = QMainWindow
+    window.setGeometry(300, 250, 350, 200)
+    window.show()
+
+    #files = QFileDialog.getOpenFileNames(None, "Выберите файлы:", "", "Text files (*.dev)")
+    #print(file_reading(files[0]))
     sys.exit(app.exec_())
