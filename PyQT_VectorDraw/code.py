@@ -16,9 +16,10 @@ class MainWindowLogic(QMainWindow):
         self.line_color = QColor(0, 0, 0)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.is_drawing = True
+        self.is_drawing = False
         self.is_choose_mode = False
         self.is_fill_mode = False
+        self.is_move_mode = False
         self.choosed_shape = {"rect": 0, "triang": 0, "ellips": 0, "line": 0}
         self.shapes = list()
         self.excretion_coords = False
@@ -40,6 +41,7 @@ class MainWindowLogic(QMainWindow):
         self.ui.actionPaletteBrush.triggered.connect(self.brush_color_dialog)
         self.ui.actionChooseShape.triggered.connect(self.excretion_trigger)
         self.ui.actionCleanWindow.triggered.connect(self.clean_window)
+        self.ui.moveAction.triggered.connect(self.move_method)
         self.ui.lineAction.triggered.connect(lambda: self.choose_shape("line"))
 
     def clean_window(self):
@@ -56,6 +58,7 @@ class MainWindowLogic(QMainWindow):
         for shape in self.shapes_in_excretion_area:
             self.shapes.append(shape)
         self.shapes_in_excretion_area.clear()
+
     #  self.update()
 
     def choose_shape(self, shape):
@@ -77,12 +80,19 @@ class MainWindowLogic(QMainWindow):
             elif self.is_choose_mode:
                 self.control.mouse_press_handler(event, self.is_choose_mode)
 
+
     def mouseMoveEvent(self, event):
         if event.buttons() & Qt.LeftButton:
             if self.is_drawing:
                 self.control.mouse_move_handler(event)
             elif self.is_choose_mode:
                 self.control.mouse_move_handler(event, self.is_choose_mode)
+
+    def move_method(self):
+        self.is_drawing = False
+        self.is_fill_mode = False
+        if self.fis_choose_mode:
+            self.is_move_mode = True
 
     def line_color_dialog(self):
         color = QColorDialog.getColor()
@@ -134,7 +144,8 @@ class MainWindowLogic(QMainWindow):
                     # self.shapes.pop(shape)
                 else:
                     temp_list.append(shape)
-            self.shapes=temp_list
+            self.shapes = temp_list
+
 
 class ShapeObject:
     def __init__(self, properties):
@@ -150,7 +161,7 @@ class ShapeObject:
         self.line_thickness = properties[5]
         # self.legth_thickness
 
-    def draw(self, window,painter):
+    def draw(self, window, painter):
         pen = QPen(self.line_color, self.line_thickness, Qt.SolidLine)
         painter.setPen(pen)
         rect = QRect(self.upper_left_point, self.lower_right_point)

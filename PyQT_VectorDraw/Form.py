@@ -68,6 +68,12 @@ class Ui_MainWindow(object):
         self.lineAction.setIcon(self.lineIcon)
         self.lineAction.setObjectName("actionline")
 
+        self.moveAction = QtWidgets.QAction(MainWindow)
+        self.moveIcon = QtGui.QIcon()
+        #self.lineIcon.addPixmap(QtGui.QPixmap(":/ToolBar/choose.PNG"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.moveAction.setIcon(self.moveIcon)
+        self.moveAction.setObjectName("actionmove")
+
         self.menubar.addAction(self.menuFile.menuAction())
         self.toolBar.addAction(self.actionEllips)
         self.toolBar.addAction(self.actionRectangle)
@@ -76,6 +82,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionChooseShape)
         self.toolBar.addAction(self.actionCleanWindow)
         self.toolBar.addAction(self.lineAction)
+        self.toolBar.addAction(self.moveAction)
         layout = QVBoxLayout()
         MainWindow.setLayout(layout)
         self.retranslateUi(MainWindow)
@@ -86,6 +93,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
         self.lineAction.setText(_translate("MainWindow", "Line"))
+        self.moveAction.setText(_translate("MainWindow", "Move"))
       #  self.actionRectangle.setText(_translate("MainWindow", "Rectangle"))
        # self.actionEllips.setText(_translate("MainWindow", "Ellips"))
        # self.actionEllips.setToolTip(_translate("MainWindow", "Ellips"))
