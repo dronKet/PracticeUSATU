@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'GUI.ui'
+# Form implementation generated from reading ui file 'PyQT_RasterDraw\GUI.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -69,11 +69,17 @@ class Ui_MainWindow(object):
         icon5.addPixmap(QtGui.QPixmap(":/tool_bar/tool_fill.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionFill.setIcon(icon5)
         self.actionFill.setObjectName("actionFill")
+        self.actionSelect = QtWidgets.QAction(MainWindow)
+        icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap(":/tool_bar/tool_select.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionSelect.setIcon(icon6)
+        self.actionSelect.setObjectName("actionSelect")
         self.toolBar.addAction(self.actionRectangle)
         self.toolBar.addAction(self.actionEllipse)
         self.toolBar.addAction(self.actionLine)
         self.toolBar.addAction(self.actionPoint)
         self.toolBar.addAction(self.actionFill)
+        self.toolBar.addAction(self.actionSelect)
         self.toolBar.addAction(self.actionChangeColor)
 
         self.retranslateUi(MainWindow)
@@ -84,14 +90,17 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
         self.actionRectangle.setText(_translate("MainWindow", "Rectangle"))
+        self.actionRectangle.setToolTip(_translate("MainWindow", "Рисует прямоугольник"))
         self.actionEllipse.setText(_translate("MainWindow", "Ellipse"))
-        self.actionEllipse.setToolTip(_translate("MainWindow", "Ellipse"))
+        self.actionEllipse.setToolTip(_translate("MainWindow", "Рисует эллипс"))
         self.actionChangeColor.setText(_translate("MainWindow", "ChangeColor"))
-        self.actionChangeColor.setToolTip(_translate("MainWindow", "ChangeColor"))
+        self.actionChangeColor.setToolTip(_translate("MainWindow", "Нажмите сюда для выбора цвета"))
         self.actionLine.setText(_translate("MainWindow", "Line"))
-        self.actionLine.setToolTip(_translate("MainWindow", "Line"))
+        self.actionLine.setToolTip(_translate("MainWindow", "Рисует линию"))
         self.actionPoint.setText(_translate("MainWindow", "Point"))
-        self.actionPoint.setToolTip(_translate("MainWindow", "Point"))
+        self.actionPoint.setToolTip(_translate("MainWindow", "Карандаш"))
         self.actionFill.setText(_translate("MainWindow", "Fill"))
-        self.actionFill.setToolTip(_translate("MainWindow", "Fill"))
+        self.actionFill.setToolTip(_translate("MainWindow", "Заливка"))
+        self.actionSelect.setText(_translate("MainWindow", "Select"))
+        self.actionSelect.setToolTip(_translate("MainWindow", "Выделение"))
 import Graphics.Icons.icons_rc

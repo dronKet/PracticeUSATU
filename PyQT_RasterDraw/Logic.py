@@ -3,11 +3,9 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton
 from PyQt5.QtWidgets import QMainWindow, QColorDialog
-from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QIcon, QImage
+from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QIcon, QImage, QClipboard
 from PyQt5.QtCore import Qt, QPoint, QRect
 
-
-# from Form import Interface
 
 
 class MainWindowLogic(QMainWindow):
@@ -30,10 +28,10 @@ class MainWindowLogic(QMainWindow):
 
 
         # Создаем изображение, на котором будет рисовать пользователь
-        self.drawing_surface = QPixmap(self.rect().size())
+        self.drawing_surface = QImage(QPixmap(self.rect().size()))
         self.drawing_surface.fill(Qt.white)
         # Создаем буферное изображение для инструментов, оно будет отрисовываться поверх основного
-        self.tool_surface = QPixmap(self.rect().size())
+        self.tool_surface = QPixmap(self.rect().size())#QImage(QPixmap(self.rect().size()))
         self.tool_surface.fill(QColor(0, 0, 0, 0))
 
         #Различная информация для инструментов
@@ -49,6 +47,7 @@ class MainWindowLogic(QMainWindow):
         self.draw_tools.setdefault("draw_line",ToolController_Figure_Line(self))
         self.draw_tools.setdefault("draw_point",ToolController_Figure_Point(self))
         self.draw_tools.setdefault("draw_fill",ToolController_Fill(self))
+        self.draw_tools.setdefault("select",ToolController_Select(self))
         self.draw_tool_now = self.draw_tools["draw_rectangle"]
 
 
@@ -56,19 +55,14 @@ class MainWindowLogic(QMainWindow):
         self.show()
 
     def add_functions(self):
-        # self.btn_triang.clicked.connect(lambda: self.choose_shape("triang"))
-        # self.btn_rect.clicked.connect(lambda: self.choose_shape("rect"))
-        # self.btn_ellips.clicked.connect(lambda: self.choose_shape("ellips"))
-        # self.btn_color_red.clicked.connect(lambda: self.set_color(QColor(255, 0, 0)))
-        # self.btn_color_black.clicked.connect(lambda: self.set_color(QColor(0, 0, 0)))
-        # self.btn_color_brush_red.clicked.connect(lambda: self.set_color(QColor(0, 0, 0)))
-        #  self.btn_color_brush_black.clicked.connect(lambda: self.set_color(QColor(0, 0, 0)))
+
         self.ui.actionRectangle.triggered.connect(lambda: self.changeTool("draw_rectangle"))
         self.ui.actionChangeColor.triggered.connect(lambda: self.changeColor())
         self.ui.actionEllipse.triggered.connect(lambda: self.changeTool("draw_ellipse"))
         self.ui.actionLine.triggered.connect(lambda: self.changeTool("draw_line"))
         self.ui.actionPoint.triggered.connect(lambda: self.changeTool("draw_point"))
         self.ui.actionFill.triggered.connect(lambda: self.changeTool("draw_fill"))
+        self.ui.actionSelect.triggered.connect(lambda: self.changeTool("select"))
 
 
     def changeTool(self,new_tool_id):
@@ -90,7 +84,7 @@ class MainWindowLogic(QMainWindow):
         painter = QPainter(self)
         painter.begin(self)
         painter.setPen(self.draw_color_now)
-        painter.drawPixmap(QPoint(), self.drawing_surface)
+        painter.drawImage(QPoint(), self.drawing_surface)
         painter.drawPixmap(QPoint(), self.tool_surface)
 
         painter.end()
@@ -175,7 +169,7 @@ class ToolController_Figure(ToolController):
         self.point1 = event.pos()
 
         painter = QPainter(self.main_window.drawing_surface)
-        painter.drawPixmap(QPoint(), self.main_window.drawing_surface)
+        #painter.drawImage(QPoint(), self.main_window.drawing_surface)
         painter.setPen(self.main_window.tool_data['color'])
         painter.drawPixmap(QPoint(), self.main_window.tool_surface)
 
@@ -234,7 +228,7 @@ class ToolController_Fill(ToolController):
         self.main_window.tool_surface.fill(QColor(0, 0, 0, 0))
 
         # Сама заливка
-        image = QImage(self.main_window.drawing_surface)
+        image = self.main_window.drawing_surface
         set_checked = set()
         set_for_check = set()
         set_for_check.add((event.pos().x(),event.pos().y()))
@@ -255,7 +249,7 @@ class ToolController_Fill(ToolController):
 
     def mouse_release_handler(self, event):
         painter = QPainter(self.main_window.drawing_surface)
-        painter.drawPixmap(QPoint(), self.main_window.drawing_surface)
+        #painter.drawImage(QPoint(), self.main_window.drawing_surface)
         painter.setPen(self.main_window.tool_data['color'])
         painter.drawPixmap(QPoint(), self.main_window.tool_surface)
 
@@ -274,3 +268,128 @@ class ToolController_Fill(ToolController):
                 if not ((pos[0]+i,pos[1]+j) in set_checked) and pos[0]>=0 and pos[1]>=0 and pos[0]<image.width() and pos[1]<image.height() and not (abs(i)==abs(j)):
                     if image.pixelColor(pos[0]+i,pos[1]+j).getRgb() == right_color.getRgb():
                         set_for_check.add((pos[0]+i,pos[1]+j))
+
+
+
+
+
+
+
+class ToolController_Select(ToolController):
+    #Процесс выбора. -1=ничего не выбрано,0=выбирается,1=что-то выбрано
+    selecting=-1
+
+    #Включен ли режим перемещения
+    is_moving=False
+
+    move_start_point=QPoint()
+    move_now_point=QPoint()
+
+
+    def __init__(self,window):
+        super(ToolController_Select, self).__init__(window)
+        self.selected_image=QImage(QPixmap())
+
+    def mouse_press_handler(self, event):
+        if self.selecting==-1:
+            self.selecting=0
+            self.point0 = event.pos()
+            self.point1 = event.pos()
+        if self.selecting==1:
+            if not QRect(self.point0, self.point1).intersects(QRect(event.pos(), event.pos())):
+                self.selecting=-1
+
+                # Сначала временная поверхность для рисования отчищается в цвет с нулевой прозрачностью
+                # Затем на ней рисуется, как будет выглядить фигура при текущих параметрах
+                painter = QPainter(self.main_window.drawing_surface)
+                painter.begin(self.main_window.drawing_surface)
+
+                black_image = QImage(self.selected_image)
+                black_image.fill(Qt.black)
+                painter.setPen(Qt.white)
+                painter.drawImage(self.move_start_point, black_image)
+                painter.drawImage(self.move_now_point, self.selected_image)
+
+                painter.end()
+                self.main_window.update()
+            else:
+
+                self.is_moving=True
+
+
+
+
+    def mouse_move_handler(self, event):
+        if self.selecting==0:
+            self.point1 = event.pos()
+
+            # Сначала временная поверхность для рисования отчищается в цвет с нулевой прозрачностью
+            # Затем на ней рисуется, как будет выглядить фигура при текущих параметрах
+            painter = QPainter(self.main_window.tool_surface)
+            painter.begin(self.main_window.tool_surface)
+            painter.setPen(self.main_window.tool_data['color'])
+
+            self.main_window.tool_surface.fill(QColor(0, 0, 0, 0))
+
+            rect = QRect(self.point0, self.point1)
+            painter.drawRect(rect.normalized())
+
+            painter.end()
+            self.main_window.update()
+
+
+        if self.selecting==1 and self.is_moving:
+            self.move_now_point=event.pos()
+
+            # Сначала временная поверхность для рисования отчищается в цвет с нулевой прозрачностью
+            # Затем на ней рисуется, как будет выглядить фигура при текущих параметрах
+            painter = QPainter(self.main_window.tool_surface)
+            painter.begin(self.main_window.tool_surface)
+
+            self.main_window.tool_surface.fill(QColor(0, 0, 0, 0))
+            black_image = QImage(self.selected_image)
+            black_image.fill(Qt.black)
+            painter.setPen(Qt.white)
+            painter.drawImage(self.move_start_point,black_image)
+            painter.drawImage(self.move_now_point,self.selected_image)
+
+            painter.end()
+        self.main_window.update()
+
+
+
+    def mouse_release_handler(self, event):
+        if self.selecting == 0:
+            self.selecting=1
+            self.move_start_point = self.point0
+            self.point1 = event.pos()
+
+            self.selected_image=self.main_window.drawing_surface.copy(QRect(self.point0, self.point1))
+            buff_test=QApplication.clipboard()
+            #buff_test.\
+            buff_test.setImage(self.selected_image)
+            # Сначала временная поверхность для рисования отчищается в цвет с нулевой прозрачностью
+            # Затем на ней рисуется, как будет выглядить фигура при текущих параметрах
+            painter = QPainter(self.main_window.tool_surface)
+            painter.begin(self.main_window.tool_surface)
+            painter.setPen(self.main_window.tool_data['color'])
+
+            self.main_window.tool_surface.fill(QColor(0, 0, 0, 0))
+
+            rect = QRect(self.point0, self.point1)
+            painter.drawRect(rect.normalized())
+
+            painter.end()
+            self.main_window.update()
+        else:
+            if self.selecting == 1 and self.is_moving:
+                self.move_now_point = event.pos()
+                self.is_moving=False
+                self.point0=self.move_now_point
+                self.point1=QPoint()
+                self.point1.setX(self.point0.x()+self.selected_image.width())
+                self.point1.setY(self.point0.y()+self.selected_image.height())
+
+        self.main_window.update()
+
+

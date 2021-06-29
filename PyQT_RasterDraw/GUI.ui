@@ -40,6 +40,7 @@
    <addaction name="actionLine"/>
    <addaction name="actionPoint"/>
    <addaction name="actionFill"/>
+   <addaction name="actionSelect"/>
    <addaction name="actionChangeColor"/>
   </widget>
   <action name="actionRectangle">
@@ -47,7 +48,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="venv/Graphics/Icons/icons.qrc">
+    <iconset resource="../venv/Graphics/Icons/icons.qrc">
      <normaloff>:/tool_bar/tool_rectangle.png</normaloff>
      <normalon>:/tool_bar/tool_rectangle.png</normalon>
      <disabledoff>:/tool_bar/tool_rectangle.png</disabledoff>
@@ -60,32 +61,35 @@
    <property name="text">
     <string>Rectangle</string>
    </property>
+   <property name="toolTip">
+    <string>Рисует прямоугольник</string>
+   </property>
   </action>
   <action name="actionEllipse">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="venv/Graphics/Icons/icons.qrc">
+    <iconset resource="../venv/Graphics/Icons/icons.qrc">
      <normaloff>:/tool_bar/tool_ellipse.png</normaloff>:/tool_bar/tool_ellipse.png</iconset>
    </property>
    <property name="text">
     <string>Ellipse</string>
    </property>
    <property name="toolTip">
-    <string>Ellipse</string>
+    <string>Рисует эллипс</string>
    </property>
   </action>
   <action name="actionChangeColor">
    <property name="icon">
-    <iconset resource="venv/Graphics/Icons/icons.qrc">
+    <iconset resource="../venv/Graphics/Icons/icons.qrc">
      <normaloff>:/tool_bar/tool_collor.png</normaloff>:/tool_bar/tool_collor.png</iconset>
    </property>
    <property name="text">
     <string>ChangeColor</string>
    </property>
    <property name="toolTip">
-    <string>ChangeColor</string>
+    <string>Нажмите сюда для выбора цвета</string>
    </property>
   </action>
   <action name="actionLine">
@@ -93,14 +97,14 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="venv/Graphics/Icons/icons.qrc">
+    <iconset resource="../venv/Graphics/Icons/icons.qrc">
      <normaloff>:/tool_bar/tool_line.png</normaloff>:/tool_bar/tool_line.png</iconset>
    </property>
    <property name="text">
     <string>Line</string>
    </property>
    <property name="toolTip">
-    <string>Line</string>
+    <string>Рисует линию</string>
    </property>
   </action>
   <action name="actionPoint">
@@ -108,31 +112,43 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="venv/Graphics/Icons/icons.qrc">
+    <iconset resource="../venv/Graphics/Icons/icons.qrc">
      <normaloff>:/tool_bar/tool_point.png</normaloff>:/tool_bar/tool_point.png</iconset>
    </property>
    <property name="text">
     <string>Point</string>
    </property>
    <property name="toolTip">
-    <string>Point</string>
+    <string>Карандаш</string>
    </property>
   </action>
   <action name="actionFill">
    <property name="icon">
-    <iconset resource="venv/Graphics/Icons/icons.qrc">
+    <iconset resource="../venv/Graphics/Icons/icons.qrc">
      <normaloff>:/tool_bar/tool_fill.png</normaloff>:/tool_bar/tool_fill.png</iconset>
    </property>
    <property name="text">
     <string>Fill</string>
    </property>
    <property name="toolTip">
-    <string>Fill</string>
+    <string>Заливка</string>
+   </property>
+  </action>
+  <action name="actionSelect">
+   <property name="icon">
+    <iconset resource="../venv/Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_select.png</normaloff>:/tool_bar/tool_select.png</iconset>
+   </property>
+   <property name="text">
+    <string>Select</string>
+   </property>
+   <property name="toolTip">
+    <string>Выделение</string>
    </property>
   </action>
  </widget>
  <resources>
-  <include location="venv/Graphics/Icons/icons.qrc"/>
+  <include location="../venv/Graphics/Icons/icons.qrc"/>
  </resources>
  <connections/>
 </ui>
