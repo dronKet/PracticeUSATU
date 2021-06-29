@@ -9,12 +9,12 @@ from Form import Ui_MainWindow
 
 
 class MainWindowLogic(QMainWindow):
-    def __init__(self, form):
+    def __init__(self):
         super().__init__()
         self.control = ControllerShape(self)
         self.brush_color = QColor(255, 255, 255)
         self.line_color = QColor(0, 0, 0)
-        self.ui = form
+        self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.is_drawing = True
         self.is_choose_mode = False
@@ -28,21 +28,21 @@ class MainWindowLogic(QMainWindow):
         self.external_area = QPixmap(self.rect().size())
         self.external_area.fill(QColor(0, 0, 0, 0))
 
-        self.begin, self.destination = QPoint(), QPoint()
+        self.begin = QPoint()
+        self.destination = QPoint()
         self.add_functions()
         self.count_shapes = 0
-        self.show()
 
     def add_functions(self):
         self.ui.actionRectangle.triggered.connect(lambda: self.choose_shape("rect"))
         self.ui.actionEllips.triggered.connect(lambda: self.choose_shape("ellips"))
-        self.ui.actionPaletteLine.triggered.connect(self.lineColorDialog)
-        self.ui.actionPaletteBrush.triggered.connect(self.brushColorDialog)
+        self.ui.actionPaletteLine.triggered.connect(self.line_color_dialog)
+        self.ui.actionPaletteBrush.triggered.connect(self.brush_color_dialog)
         # self.actionChooseShape.triggered.connect(self.ChooseShape)
-        self.ui.actionCleanWindow.triggered.connect(self.CleanWindow)
+        self.ui.actionCleanWindow.triggered.connect(self.clean_window)
         self.ui.lineAction.triggered.connect(lambda: self.choose_shape("line"))
 
-    def CleanWindow(self):
+    def clean_window(self):
         self.main_area.fill(Qt.white)
         self.external_area.fill(Qt.white)
         self.update()
@@ -95,7 +95,7 @@ class MainWindowLogic(QMainWindow):
         if event.buttons() & Qt.LeftButton and self.is_drawing:
             self.control.mouse_move_handler(event)
 
-    def lineColorDialog(self):
+    def line_color_dialog(self):
         color = QColorDialog.getColor()
         self.line_color = color
         icon_pix = QPixmap(self.rect().size())
@@ -103,7 +103,7 @@ class MainWindowLogic(QMainWindow):
         self.ui.icon2.addPixmap(QtGui.QPixmap(icon_pix), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.ui.actionPaletteLine.setIcon(self.ui.icon2)
 
-    def brushColorDialog(self):
+    def brush_color_dialog(self):
         color = QColorDialog.getColor()
         print(color)
         self.is_drawing = False
@@ -118,6 +118,16 @@ class MainWindowLogic(QMainWindow):
         if event.button() & Qt.LeftButton:
             if self.is_drawing:
                 self.control.mouse_release_handler(event)
+
+
+class ShapeObject:
+    def __init__(self,array_of):
+        self.line_color
+        self.brush_color
+        self.line_thickness
+        self.legth_thickness
+        self.upper_left_point
+        self.lower_right_point
 
 
 class Controller:
@@ -185,6 +195,6 @@ if __name__ == "__main__":
     import sys
 
     app = QApplication([])
-    ui = Ui_MainWindow()
-    window = MainWindowLogic(ui)
+    window = MainWindowLogic()
+    window.show()
     app.exec()
