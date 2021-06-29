@@ -53,8 +53,9 @@ class MainWindowLogic(QMainWindow):
         self.is_drawing = False
         self.is_choose_mode = True
         self.external_area.fill(Qt.white)
+        for shape in self.shapes_in_excretion_area:
+            self.shapes.append(shape)
         self.shapes_in_excretion_area.clear()
-
     #  self.update()
 
     def choose_shape(self, shape):
@@ -115,20 +116,25 @@ class MainWindowLogic(QMainWindow):
 
     def fill(self):
         if self.shapes_in_excretion_area.__ne__([]):
+            painter = QPainter(self.external_area)
+            painter.drawPixmap(QPoint(), self.external_area)
             print(self.shapes_in_excretion_area)
             for shape in self.shapes_in_excretion_area:
                 shape.brush_color = self.brush_color
-                shape.draw(window=self)
+                shape.draw(self, painter)
 
     def search_hits(self):
         excr = self.excretion_coords
         if excr != False:
+            temp_list = list()
             for shape in self.shapes:
                 if excr[0].x() < shape.upper_x and excr[0].y() < shape.upper_y and excr[1].x() > shape.lower_x and excr[
                     1].y() > shape.lower_y:
                     self.shapes_in_excretion_area.append(shape)
                     # self.shapes.pop(shape)
-
+                else:
+                    temp_list.append(shape)
+            self.shapes=temp_list
 
 class ShapeObject:
     def __init__(self, properties):
@@ -144,9 +150,7 @@ class ShapeObject:
         self.line_thickness = properties[5]
         # self.legth_thickness
 
-    def draw(self, window):
-        painter = QPainter(window.main_area)
-        painter.drawPixmap(QPoint(), window.main_area)
+    def draw(self, window,painter):
         pen = QPen(self.line_color, self.line_thickness, Qt.SolidLine)
         painter.setPen(pen)
         rect = QRect(self.upper_left_point, self.lower_right_point)
