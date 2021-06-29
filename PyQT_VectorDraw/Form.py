@@ -7,13 +7,13 @@ import Resources.Icons
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        self.window_width, self.window_height = 800, 480
+        self.window_width, self.window_height = 1440, 900
         MainWindow.setMinimumSize(self.window_width, self.window_height)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1440, 21))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")

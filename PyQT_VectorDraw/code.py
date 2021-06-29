@@ -28,7 +28,7 @@ class MainWindowLogic(QMainWindow):
         self.external_area = QPixmap(self.rect().size())
         self.external_area.fill(QColor(0, 0, 0, 0))
         self.shapes_in_excretion_area = list()
-
+        self.control_move = ControllerMove(self)
         self.begin = QPoint()
         self.destination = QPoint()
         self.add_functions()
@@ -63,6 +63,7 @@ class MainWindowLogic(QMainWindow):
 
     def choose_shape(self, shape):
         self.is_drawing = True
+        self.is_choose_mode = False
         for key in self.choosed_shape:
             self.choosed_shape[key] = 0
         self.choosed_shape[shape] = 1
@@ -79,7 +80,9 @@ class MainWindowLogic(QMainWindow):
                 self.control.mouse_press_handler(event)
             elif self.is_choose_mode:
                 self.control.mouse_press_handler(event, self.is_choose_mode)
-
+            if self.excretion_coords != False and self.is_choose_mode and self.is_move_mode:
+                self.is_choose_mode = False
+                self.control_move.mouse_press_handler(event)
 
     def mouseMoveEvent(self, event):
         if event.buttons() & Qt.LeftButton:
@@ -87,11 +90,14 @@ class MainWindowLogic(QMainWindow):
                 self.control.mouse_move_handler(event)
             elif self.is_choose_mode:
                 self.control.mouse_move_handler(event, self.is_choose_mode)
+            if self.excretion_coords != False and self.is_move_mode:
+                self.is_choose_mode = False
+                self.control_move.mouse_move_handler(event)
 
     def move_method(self):
         self.is_drawing = False
         self.is_fill_mode = False
-        if self.fis_choose_mode:
+        if self.is_choose_mode:
             self.is_move_mode = True
 
     def line_color_dialog(self):
@@ -101,6 +107,8 @@ class MainWindowLogic(QMainWindow):
         icon_pix.fill(color)
         self.ui.icon2.addPixmap(QtGui.QPixmap(icon_pix), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.ui.actionPaletteLine.setIcon(self.ui.icon2)
+
+        self.change_line_color()
 
     def brush_color_dialog(self):
         color = QColorDialog.getColor()
@@ -124,6 +132,10 @@ class MainWindowLogic(QMainWindow):
                 self.control.mouse_release_handler(event, self.is_choose_mode)
                 self.search_hits()
 
+            if self.excretion_coords != False and self.is_move_mode and self.is_choose_mode:
+                self.is_choose_mode = False
+                self.control_move.mouse_release_handler(event)
+
     def fill(self):
         if self.shapes_in_excretion_area.__ne__([]):
             painter = QPainter(self.external_area)
@@ -131,6 +143,15 @@ class MainWindowLogic(QMainWindow):
             print(self.shapes_in_excretion_area)
             for shape in self.shapes_in_excretion_area:
                 shape.brush_color = self.brush_color
+                shape.draw(self, painter)
+
+    def change_line_color(self):
+        if self.shapes_in_excretion_area.__ne__([]):
+            painter = QPainter(self.external_area)
+            painter.drawPixmap(QPoint(), self.external_area)
+            print(self.shapes_in_excretion_area)
+            for shape in self.shapes_in_excretion_area:
+                shape.line_color = self.line_color
                 shape.draw(self, painter)
 
     def search_hits(self):
@@ -159,19 +180,20 @@ class ShapeObject:
         self.lower_x = self.lower_right_point.x()
         self.lower_y = self.lower_right_point.y()
         self.line_thickness = properties[5]
-        # self.legth_thickness
+        self.point=QPoint(0,0)
 
     def draw(self, window, painter):
         pen = QPen(self.line_color, self.line_thickness, Qt.SolidLine)
         painter.setPen(pen)
-        rect = QRect(self.upper_left_point, self.lower_right_point)
+        painter.setRenderHint(QPainter.Antialiasing)
+        rect = QRect(self.upper_left_point+self.point, self.lower_right_point++self.point)
         painter.setBrush(self.brush_color)
         if self.name == "rect":
             painter.drawRect(rect.normalized())
         elif self.name == "ellips":
             painter.drawEllipse(rect.normalized())
         elif self.name == "line":
-            painter.drawLine(self.upper_left_point, self.lower_right_point)
+            painter.drawLine(self.upper_left_point+self.point, self.lower_right_point+self.point)
 
 
 class Controller:
@@ -180,6 +202,7 @@ class Controller:
         # self.main_surface = window.drawing_surface
         self.begin = QPoint()
         self.destination = QPoint()
+        self.first_pos = 0
 
     def mouse_press_handler(self, event):
         pass
@@ -191,7 +214,38 @@ class Controller:
         pass
 
 
-# class ControllerExcretion(Controller):
+class ControllerMove(Controller):
+    #  def __init__(self):
+    #    super().__init__()
+    def draw_shape(self):
+        painter = QPainter(self.main_window.external_area)
+        painter.drawPixmap(QPoint(), self.main_window.external_area)
+        for shape in self.main_window.shapes_in_excretion_area:
+            # print(shape.upper_left_point + self.first_pos)
+            # print(shape.lower_right_point+self.first_pos)
+            shape.point=self.first_pos
+            #shape.upper_left_point = self.first_pos
+            #shape.lower_right_point = self.first_pos
+            shape.draw(self, painter)
+        self.main_window.update()
+
+    def mouse_press_handler(self, event):
+        self.first_pos = event.pos()
+        # self.begin = event.pos()
+        # self.destination = event.pos()
+        # print(2)
+
+    # self.draw_shape()
+
+    def mouse_move_handler(self, event):
+        self.first_pos = event.pos() - self.first_pos
+        print(self.first_pos)
+        self.main_window.external_area.fill(Qt.white)
+        self.draw_shape()
+
+    def mouse_release_handler(self, event):
+        self.first_pos = event.pos() - self.first_pos
+        self.draw_shape()
 
 
 class ControllerShape(Controller):
