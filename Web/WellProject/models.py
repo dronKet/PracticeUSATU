@@ -2,15 +2,18 @@ from django.db import models
 
 
 # Create your models here.
-class Well(models.Model):
+class WellModel(models.Model):
+    id = models.IntegerField(primary_key=True, unique=True)
     name = models.CharField(max_length=200)
 
     def __str__(self):
         return self.name
 
 
-class Coordinate(models.Model):
-    well = models.ForeignKey(Well, on_delete=models.CASCADE)
-    data = models.JSONField()
-
-
+class CoordinateModel(models.Model):
+    id = models.IntegerField(primary_key=True, unique=True)
+    well = models.ForeignKey(WellModel, on_delete=models.CASCADE)
+    sequence_number = models.IntegerField()
+    x = models.FloatField()
+    y = models.FloatField()
+    z = models.FloatField()
