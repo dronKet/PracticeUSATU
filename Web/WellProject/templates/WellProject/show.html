@@ -13,11 +13,11 @@
                 <th>Y</th>
                 <th>Z</th>
             </tr>
-            {% for x, y, z in coords %}
+            {% for coord in coords %}
             <tr>
-                <td>{{ x }}</td>
-                <td>{{ y }}</td>
-                <td>{{ z }}</td>
+                <td>{{ coord.x }}</td>
+                <td>{{ coord.y }}</td>
+                <td>{{ coord.z }}</td>
             </tr>
             {% endfor %}
         </table>
