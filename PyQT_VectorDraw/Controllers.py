@@ -48,7 +48,11 @@ class ControllerMove(Controller):
         self.main_window.main_area.fill(Qt.white)
         painter = QPainter(self.main_window.main_area)
         self.draw_shape(painter)
-
+        for shape in self.main_window.shapes:
+            if shape.is_excretion:
+                shape.lower_right_point += shape.point
+                shape.upper_left_point += shape.point
+                shape.point=QPoint(0,0)
 
 class ControllerShape(Controller):
     def draw_shape(self, is_choose_mode):

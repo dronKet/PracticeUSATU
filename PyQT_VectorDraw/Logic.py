@@ -33,6 +33,15 @@ class MainWindowLogic(QMainWindow):
         self.destination = QPoint()
         self.add_functions()
 
+    def add_functions(self):
+        self.ui.actionRectangle.triggered.connect(lambda: self.choose_shape("rect"))
+        self.ui.actionEllips.triggered.connect(lambda: self.choose_shape("ellips"))
+        self.ui.actionPaletteLine.triggered.connect(self.line_color_dialog)
+        self.ui.actionPaletteBrush.triggered.connect(self.brush_color_dialog)
+        self.ui.actionChooseShape.triggered.connect(self.excretion_trigger)
+        self.ui.actionCleanWindow.triggered.connect(self.clean_window)
+        self.ui.moveAction.triggered.connect(self.move_method)
+        self.ui.lineAction.triggered.connect(lambda: self.choose_shape("line"))
 
     def clean_window(self):
         self.off_tools()
@@ -106,7 +115,7 @@ class MainWindowLogic(QMainWindow):
 
     def brush_color_dialog(self):
         color = QColorDialog.getColor()
-        self.is_drawing = False
+        self.off_tools()
         self.is_fill_mode = True
         self.brush_color = color
         icon_pix = QPixmap(self.rect().size())
@@ -123,8 +132,6 @@ class MainWindowLogic(QMainWindow):
         if event.button() & Qt.LeftButton:
             if self.is_drawing:
                 self.control.mouse_release_handler(event)
-            #  elif self.is_fill_mode:
-
             elif self.is_move_mode:
                 self.is_choose_mode = False
                 self.control_move.mouse_release_handler(event)
@@ -140,6 +147,7 @@ class MainWindowLogic(QMainWindow):
                 if shape.is_excretion:
                     shape.brush_color = self.brush_color
                     shape.draw(self, painter)
+            self.update()
 
     def change_line_color(self):
         painter = QPainter(self.main_area)
@@ -170,15 +178,6 @@ class MainWindowLogic(QMainWindow):
             shape.draw(self,painter2)
         #self.update()
 
-    def add_functions(self):
-        self.ui.actionRectangle.triggered.connect(lambda: self.choose_shape("rect"))
-        self.ui.actionEllips.triggered.connect(lambda: self.choose_shape("ellips"))
-        self.ui.actionPaletteLine.triggered.connect(self.line_color_dialog)
-        self.ui.actionPaletteBrush.triggered.connect(self.brush_color_dialog)
-        self.ui.actionChooseShape.triggered.connect(self.excretion_trigger)
-        self.ui.actionCleanWindow.triggered.connect(self.clean_window)
-        self.ui.moveAction.triggered.connect(self.move_method)
-        self.ui.lineAction.triggered.connect(lambda: self.choose_shape("line"))
 
 
 
