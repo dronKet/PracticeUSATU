@@ -28,39 +28,33 @@ class MainWindowLogic(QMainWindow):
         self.main_area.fill(Qt.white)
         self.external_area = QPixmap(self.rect().size())
         self.external_area.fill(QColor(0, 0, 0, 0))
-        self.shapes_in_excretion_area = list()
         self.control_move = ControllerMove(self)
         self.begin = QPoint()
         self.destination = QPoint()
         self.add_functions()
-        self.count_shapes = 0
 
 
     def clean_window(self):
+        self.off_tools()
         self.main_area.fill(Qt.white)
         self.external_area.fill(Qt.white)
         self.update()
-        self.count_shapes = 0
         self.shapes.clear()
+
+    def off_tools(self):
         self.is_drawing = False
         self.is_choose_mode = False
         self.is_fill_mode = False
         self.is_move_mode = False
-        self.shapes_in_excretion_area.clear()
-        self.shapes.clear()
+
 
     def excretion_trigger(self):
-        self.is_drawing = False
-        if self.is_choose_mode:
-            for shape in self.shapes_in_excretion_area:
-                self.shapes.append(shape)
-        self.is_choose_mode = True
-        #self.external_area.fill(Qt.white)
-        self.shapes_in_excretion_area.clear()
+        self.off_tools()
+        self.is_choose_mode=True
 
     def choose_shape(self, shape):
+        self.off_tools()
         self.is_drawing = True
-        self.is_choose_mode = False
         for key in self.choosed_shape:
             self.choosed_shape[key] = 0
         self.choosed_shape[shape] = 1
@@ -75,23 +69,24 @@ class MainWindowLogic(QMainWindow):
         if event.buttons() & Qt.LeftButton:
             if self.is_drawing:
                 self.control.mouse_press_handler(event)
-            elif self.is_choose_mode and self.excretion_coords == False:
-                print("is_choose_mode")
-                self.control.mouse_press_handler(event, self.is_choose_mode)
-            if self.excretion_coords != False and self.is_choose_mode and self.is_move_mode:
+            elif self.is_choose_mode and self.is_move_mode:
                 print("is_move_mode")
                 self.is_choose_mode = False
                 self.control_move.mouse_press_handler(event)
+            elif self.is_choose_mode:
+                print("is_choose_mode")
+                self.control.mouse_press_handler(event, self.is_choose_mode)
+            else:
+                self.rm_excretion()
 
     def mouseMoveEvent(self, event):
         if event.buttons() & Qt.LeftButton:
             if self.is_drawing:
                 self.control.mouse_move_handler(event)
-            elif self.is_choose_mode and self.excretion_coords == False:
-                self.control.mouse_move_handler(event, self.is_choose_mode)
-            if self.excretion_coords != False and self.is_move_mode:
-                self.is_choose_mode = False
+            elif self.is_move_mode:
                 self.control_move.mouse_move_handler(event)
+            elif self.is_choose_mode:
+                self.control.mouse_move_handler(event, self.is_choose_mode)
 
     def move_method(self):
         self.is_drawing = False
@@ -120,46 +115,47 @@ class MainWindowLogic(QMainWindow):
         self.ui.actionPaletteBrush.setIcon(self.ui.icon3)
         self.fill()
 
+    def rm_excretion(self):
+        for shape in self.shapes:
+            shape.is_excretion=False
+
     def mouseReleaseEvent(self, event):
         if event.button() & Qt.LeftButton:
             if self.is_drawing:
                 self.control.mouse_release_handler(event)
             #  elif self.is_fill_mode:
 
-            elif self.is_choose_mode and self.excretion_coords == False:
-                self.control.mouse_release_handler(event, self.is_choose_mode)
-                self.search_hits()
-                self.re_drawing_areas()
-
-            if self.excretion_coords != False and self.is_move_mode and self.is_choose_mode:
+            elif self.is_move_mode and self.is_choose_mode:
                 self.is_choose_mode = False
                 self.control_move.mouse_release_handler(event)
 
+            elif self.is_choose_mode:
+                self.control.mouse_release_handler(event, self.is_choose_mode)
+                self.search_hits()
+                #self.re_drawing_areas()
+
     def fill(self):
-        if self.shapes_in_excretion_area.__ne__([]):
-            painter = QPainter(self.external_area)
-            for shape in self.shapes_in_excretion_area:
-                shape.brush_color = self.brush_color
-                shape.draw(self, painter)
+            painter = QPainter(self.main_area)
+            for shape in self.shapes:
+                if shape.is_excretion:
+                    shape.brush_color = self.brush_color
+                    shape.draw(self, painter)
 
     def change_line_color(self):
-        if self.shapes_in_excretion_area.__ne__([]):
-            painter = QPainter(self.external_area)
-            for shape in self.shapes_in_excretion_area:
+        painter = QPainter(self.main_area)
+        for shape in self.shapes:
+            if shape.is_excretion:
                 shape.line_color = self.line_color
                 shape.draw(self, painter)
 
     def search_hits(self):
         excr = self.excretion_coords
+        self.excretion_coords=False
         if excr != False:
-            temp_list = list()
             for shape in self.shapes:
                 if excr[0].x() < shape.upper_x and excr[0].y() < shape.upper_y and excr[1].x() > shape.lower_x and excr[
                     1].y() > shape.lower_y:
-                    self.shapes_in_excretion_area.append(shape)
-                else:
-                    temp_list.append(shape)
-            self.shapes = temp_list
+                    shape.is_excretion=True
 
     def re_drawing_areas(self):
         self.main_area.fill(Qt.white)

@@ -15,7 +15,7 @@ class ShapeObject:
         self.lower_y = self.lower_right_point.y()
         self.line_thickness = properties[5]
         self.point=QPoint(0,0)
-        self.is_excretion_coords = False
+        self.is_excretion = False
 
     def draw(self, window, painter):
         pen = QPen(self.line_color, self.line_thickness, Qt.SolidLine)
