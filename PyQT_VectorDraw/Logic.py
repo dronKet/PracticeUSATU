@@ -51,13 +51,12 @@ class MainWindowLogic(QMainWindow):
 
     def excretion_trigger(self):
         self.is_drawing = False
+        if self.is_choose_mode:
+            for shape in self.shapes_in_excretion_area:
+                self.shapes.append(shape)
         self.is_choose_mode = True
-        self.external_area.fill(Qt.white)
-        for shape in self.shapes_in_excretion_area:
-            self.shapes.append(shape)
+        #self.external_area.fill(Qt.white)
         self.shapes_in_excretion_area.clear()
-
-    #  self.update()
 
     def choose_shape(self, shape):
         self.is_drawing = True
@@ -76,9 +75,11 @@ class MainWindowLogic(QMainWindow):
         if event.buttons() & Qt.LeftButton:
             if self.is_drawing:
                 self.control.mouse_press_handler(event)
-            elif self.is_choose_mode:
+            elif self.is_choose_mode and self.excretion_coords == False:
+                print("is_choose_mode")
                 self.control.mouse_press_handler(event, self.is_choose_mode)
             if self.excretion_coords != False and self.is_choose_mode and self.is_move_mode:
+                print("is_move_mode")
                 self.is_choose_mode = False
                 self.control_move.mouse_press_handler(event)
 
@@ -86,7 +87,7 @@ class MainWindowLogic(QMainWindow):
         if event.buttons() & Qt.LeftButton:
             if self.is_drawing:
                 self.control.mouse_move_handler(event)
-            elif self.is_choose_mode:
+            elif self.is_choose_mode and self.excretion_coords == False:
                 self.control.mouse_move_handler(event, self.is_choose_mode)
             if self.excretion_coords != False and self.is_move_mode:
                 self.is_choose_mode = False
@@ -110,7 +111,6 @@ class MainWindowLogic(QMainWindow):
 
     def brush_color_dialog(self):
         color = QColorDialog.getColor()
-        print(color)
         self.is_drawing = False
         self.is_fill_mode = True
         self.brush_color = color
@@ -126,9 +126,10 @@ class MainWindowLogic(QMainWindow):
                 self.control.mouse_release_handler(event)
             #  elif self.is_fill_mode:
 
-            elif self.is_choose_mode:
+            elif self.is_choose_mode and self.excretion_coords == False:
                 self.control.mouse_release_handler(event, self.is_choose_mode)
                 self.search_hits()
+                self.re_drawing_areas()
 
             if self.excretion_coords != False and self.is_move_mode and self.is_choose_mode:
                 self.is_choose_mode = False
@@ -137,8 +138,6 @@ class MainWindowLogic(QMainWindow):
     def fill(self):
         if self.shapes_in_excretion_area.__ne__([]):
             painter = QPainter(self.external_area)
-            painter.drawPixmap(QPoint(), self.external_area)
-            print(self.shapes_in_excretion_area)
             for shape in self.shapes_in_excretion_area:
                 shape.brush_color = self.brush_color
                 shape.draw(self, painter)
@@ -146,8 +145,6 @@ class MainWindowLogic(QMainWindow):
     def change_line_color(self):
         if self.shapes_in_excretion_area.__ne__([]):
             painter = QPainter(self.external_area)
-            painter.drawPixmap(QPoint(), self.external_area)
-            print(self.shapes_in_excretion_area)
             for shape in self.shapes_in_excretion_area:
                 shape.line_color = self.line_color
                 shape.draw(self, painter)
@@ -160,10 +157,22 @@ class MainWindowLogic(QMainWindow):
                 if excr[0].x() < shape.upper_x and excr[0].y() < shape.upper_y and excr[1].x() > shape.lower_x and excr[
                     1].y() > shape.lower_y:
                     self.shapes_in_excretion_area.append(shape)
-                    # self.shapes.pop(shape)
                 else:
                     temp_list.append(shape)
             self.shapes = temp_list
+
+    def re_drawing_areas(self):
+        self.main_area.fill(Qt.white)
+        #self.external_area.fill(Qt.white)
+        painter1 = QPainter(self.external_area)
+        #painter1.drawPixmap(QPoint(), self.external_area)
+        painter2 = QPainter(self.main_area)
+        #painter2.drawPixmap(QPoint(), self.main_area)
+        for shape in self.shapes_in_excretion_area:
+            shape.draw(self,painter1)
+        for shape in self.shapes:
+            shape.draw(self,painter2)
+        #self.update()
 
     def add_functions(self):
         self.ui.actionRectangle.triggered.connect(lambda: self.choose_shape("rect"))

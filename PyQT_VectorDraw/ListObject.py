@@ -15,12 +15,13 @@ class ShapeObject:
         self.lower_y = self.lower_right_point.y()
         self.line_thickness = properties[5]
         self.point=QPoint(0,0)
+        self.is_excretion_coords = False
 
     def draw(self, window, painter):
         pen = QPen(self.line_color, self.line_thickness, Qt.SolidLine)
         painter.setPen(pen)
         painter.setRenderHint(QPainter.Antialiasing)
-        rect = QRect(self.upper_left_point+self.point, self.lower_right_point++self.point)
+        rect = QRect(self.upper_left_point+self.point, self.lower_right_point+self.point)
         painter.setBrush(self.brush_color)
         if self.name == "rect":
             painter.drawRect(rect.normalized())
