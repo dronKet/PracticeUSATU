@@ -28,7 +28,6 @@ class Controller:
 
 class ControllerMove(Controller):
     def draw_shape(self,painter):
-        self.main_window.external_area.fill(Qt.white)
         for shape in self.main_window.shapes:
             if shape.is_excretion:
                 shape.point = self.delta_pos
@@ -36,19 +35,17 @@ class ControllerMove(Controller):
         self.main_window.update()
 
     def mouse_press_handler(self, event):
-        #self.main_window.main_area.fill(Qt.white)
-        #self.main_window.update()
         self.first_pos = event.pos()
 
     def mouse_move_handler(self, event):
-        self.delta_pos = event.pos()- self.first_pos
-        self.last_pos = event.pos()
+        self.delta_pos = event.pos() - self.first_pos
         painter = QPainter(self.main_window.external_area)
+        self.main_window.external_area.fill(Qt.white)
         self.draw_shape(painter)
 
     def mouse_release_handler(self, event):
-        self.delta_pos = event.pos() - self.delta_pos
-        self.last_pos = event.pos()
+        self.delta_pos = event.pos() - self.first_pos
+        self.main_window.main_area.fill(Qt.white)
         painter = QPainter(self.main_window.main_area)
         self.draw_shape(painter)
 

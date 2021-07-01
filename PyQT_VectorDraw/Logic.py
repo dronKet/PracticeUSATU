@@ -125,7 +125,7 @@ class MainWindowLogic(QMainWindow):
                 self.control.mouse_release_handler(event)
             #  elif self.is_fill_mode:
 
-            elif self.is_move_mode and self.is_choose_mode:
+            elif self.is_move_mode:
                 self.is_choose_mode = False
                 self.control_move.mouse_release_handler(event)
 
