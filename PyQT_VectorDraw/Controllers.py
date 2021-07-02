@@ -26,26 +26,48 @@ class Controller:
         pass
 
 
+class ControllerАccidentalClick(Controller):
+    def check_press_figure(self,shape,pos):
+        if pos.x() > shape.upper_x and pos.y() > shape.upper_y and pos.x() < shape.lower_x and pos.y() < shape.lower_y:
+            return True
+
+    def excretion_pressed_figure(self,event):
+        for shape in self.main_window.shapes:
+            if self.check_press_figure(shape,event.pos()):
+                shape.is_excretion=True
+                shape.draw(self.main_window,QPainter(self.main_window.main_area))
+                self.main_window.update
+
 class ControllerMove(Controller):
+    def first_drawing(self):
+        painter=QPainter(self.main_window.main_area)
+        self.main_window.main_area.fill(Qt.white)
+        for shape in self.main_window.shapes:
+            if not shape.is_excretion:
+                print("drawed")
+                shape.draw(self, painter)
+        self.main_window.update()
+
     def draw_shape(self,painter):
         for shape in self.main_window.shapes:
             if shape.is_excretion:
                 shape.point = self.delta_pos
-            shape.draw(self, painter)
+                shape.draw(self, painter)
         self.main_window.update()
 
     def mouse_press_handler(self, event):
         self.first_pos = event.pos()
+        self.first_drawing()
 
     def mouse_move_handler(self, event):
         self.delta_pos = event.pos() - self.first_pos
         painter = QPainter(self.main_window.external_area)
-        self.main_window.external_area.fill(Qt.white)
+        self.main_window.external_area.fill(QColor(0, 0, 0, 0))
         self.draw_shape(painter)
 
     def mouse_release_handler(self, event):
         self.delta_pos = event.pos() - self.first_pos
-        self.main_window.main_area.fill(Qt.white)
+        #self.main_window.main_area.fill(Qt.white)
         painter = QPainter(self.main_window.main_area)
         self.draw_shape(painter)
         for shape in self.main_window.shapes:
@@ -77,37 +99,37 @@ class ControllerShape(Controller):
     def mouse_press_handler(self, event, is_choose_mode=False):
         self.begin = event.pos()
         self.destination = event.pos()
-        self.draw_shape(is_choose_mode)
+        #self.draw_shape(is_choose_mode)
 
     def mouse_move_handler(self, event, is_choose_mode=False):
         self.destination = event.pos()
-        self.draw_shape(is_choose_mode)
+        if self.destination!=self.begin:
+            self.draw_shape(is_choose_mode)
 
     def mouse_release_handler(self, event, is_choose_mode=False):
         self.destination = event.pos()
-        painter = QPainter(self.main_window.main_area)
-        painter.setPen(self.main_window.line_color)
-        painter.setRenderHint(QPainter.Antialiasing)
-        rect = QRect(self.begin, self.destination)
-        if is_choose_mode:
-            painter = QPainter(self.main_window.external_area)
-            pen = QPen(Qt.black, 2, Qt.DashLine)
-            painter.setPen(pen)
-            painter.drawRect(rect.normalized())
-            self.main_window.excretion_coords = [self.begin, self.destination]
-        else:
-            created_shape = False
-            if self.main_window.choosed_shape["ellips"] == 1:
-                painter.drawEllipse(rect.normalized())
-                created_shape = [self.main_window.line_color, self.main_window.brush_color, "ellips", self.begin,
-                                 self.destination, 2]
-            elif self.main_window.choosed_shape["rect"] == 1:
-                painter.drawRect(rect.normalized())
-                created_shape = [self.main_window.line_color, self.main_window.brush_color, "rect", self.begin,
-                                 self.destination, 2]
-            elif self.main_window.choosed_shape["line"] == 1:
-                painter.drawLine(self.begin, self.destination)
-                created_shape = [self.main_window.line_color, self.main_window.brush_color, "line", self.begin,
-                                 self.destination, 2]
-            created_shape = ShapeObject(created_shape)
-            self.main_window.shapes.append(created_shape)
+        if self.destination!=self.begin:
+            painter = QPainter(self.main_window.main_area)
+            painter.setPen(self.main_window.line_color)
+            painter.setRenderHint(QPainter.Antialiasing)
+            rect = QRect(self.begin, self.destination)
+            if is_choose_mode:
+                self.main_window.external_area.fill(QColor(0, 0, 0, 0))
+                self.main_window.excretion_coords = [self.begin, self.destination]
+            else:
+                created_shape = False
+                if self.main_window.choosed_shape["ellips"] == 1:
+                    painter.drawEllipse(rect.normalized())
+                    created_shape = [self.main_window.line_color, self.main_window.brush_color, "ellips", self.begin,
+                                     self.destination, 2]
+                elif self.main_window.choosed_shape["rect"] == 1:
+                    painter.drawRect(rect.normalized())
+                    created_shape = [self.main_window.line_color, self.main_window.brush_color, "rect", self.begin,
+                                     self.destination, 2]
+                elif self.main_window.choosed_shape["line"] == 1:
+                    painter.drawLine(self.begin, self.destination)
+                    created_shape = [self.main_window.line_color, self.main_window.brush_color, "line", self.begin,
+                                     self.destination, 2]
+                created_shape = ShapeObject(created_shape)
+                self.main_window.shapes.append(created_shape)
+                self.main_window.last_shapes_list=self.main_window.shapes

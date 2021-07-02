@@ -31,6 +31,7 @@ class MainWindowLogic(QMainWindow):
         self.control_move = ControllerMove(self)
         self.begin = QPoint()
         self.destination = QPoint()
+        self.last_shapes_list=self.shapes
         self.add_functions()
 
     def add_functions(self):
@@ -46,7 +47,7 @@ class MainWindowLogic(QMainWindow):
     def clean_window(self):
         self.off_tools()
         self.main_area.fill(Qt.white)
-        self.external_area.fill(Qt.white)
+        self.external_area.fill(QColor(0, 0, 0, 0))
         self.update()
         self.shapes.clear()
 
@@ -59,6 +60,7 @@ class MainWindowLogic(QMainWindow):
 
     def excretion_trigger(self):
         self.off_tools()
+        self.rm_excretion()
         self.is_choose_mode=True
 
     def choose_shape(self, shape):
@@ -73,20 +75,24 @@ class MainWindowLogic(QMainWindow):
         painter.drawPixmap(QPoint(), self.main_area)
         painter.drawPixmap(QPoint(), self.external_area)
 
+    def are_selected_items(self):
+        for shape in self.shapes:
+            if shape.is_excretion:
+                print("ok")
+                return True
+        return False
+
     def mousePressEvent(self, event):
         # fill_control=ControllerFill(self)
         if event.buttons() & Qt.LeftButton:
             if self.is_drawing:
                 self.control.mouse_press_handler(event)
-            elif self.is_choose_mode and self.is_move_mode:
+            elif self.are_selected_items() and self.is_move_mode:
                 print("is_move_mode")
-                self.is_choose_mode = False
                 self.control_move.mouse_press_handler(event)
             elif self.is_choose_mode:
                 print("is_choose_mode")
                 self.control.mouse_press_handler(event, self.is_choose_mode)
-            else:
-                self.rm_excretion()
 
     def mouseMoveEvent(self, event):
         if event.buttons() & Qt.LeftButton:
@@ -98,10 +104,8 @@ class MainWindowLogic(QMainWindow):
                 self.control.mouse_move_handler(event, self.is_choose_mode)
 
     def move_method(self):
-        self.is_drawing = False
-        self.is_fill_mode = False
-        if self.is_choose_mode:
-            self.is_move_mode = True
+        self.off_tools()
+        self.is_move_mode=True
 
     def line_color_dialog(self):
         color = QColorDialog.getColor()
@@ -110,28 +114,32 @@ class MainWindowLogic(QMainWindow):
         icon_pix.fill(color)
         self.ui.icon2.addPixmap(QtGui.QPixmap(icon_pix), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.ui.actionPaletteLine.setIcon(self.ui.icon2)
-
-        self.change_line_color()
+        self.change_line_color(color)
 
     def brush_color_dialog(self):
         color = QColorDialog.getColor()
         self.off_tools()
         self.is_fill_mode = True
-        self.brush_color = color
         icon_pix = QPixmap(self.rect().size())
         icon_pix.fill(color)
         self.ui.icon3.addPixmap(QtGui.QPixmap(icon_pix), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.ui.actionPaletteBrush.setIcon(self.ui.icon3)
-        self.fill()
+        self.fill(color)
 
     def rm_excretion(self):
+        painter = QPainter(self.main_area)
         for shape in self.shapes:
             shape.is_excretion=False
+            for shape in self.shapes:
+                shape.draw(self, painter)
+        self.update()
 
     def mouseReleaseEvent(self, event):
         if event.button() & Qt.LeftButton:
             if self.is_drawing:
+                self.last_shapes_list = None
                 self.control.mouse_release_handler(event)
+
             elif self.is_move_mode:
                 self.is_choose_mode = False
                 self.control_move.mouse_release_handler(event)
@@ -139,21 +147,31 @@ class MainWindowLogic(QMainWindow):
             elif self.is_choose_mode:
                 self.control.mouse_release_handler(event, self.is_choose_mode)
                 self.search_hits()
-                #self.re_drawing_areas()
+                self.re_drawing_areas()
 
-    def fill(self):
+            if self.last_shapes_list == None:
+                self.rm_excretion()
+                random_click=ControllerАccidentalClick(self)
+                random_click.excretion_pressed_figure(event)
+                self.off_tools()
+                self.last_shapes_list=list()
+
+
+    def fill(self,color):
             painter = QPainter(self.main_area)
+            self.external_area.fill(QColor(0, 0, 0, 0))
             for shape in self.shapes:
                 if shape.is_excretion:
-                    shape.brush_color = self.brush_color
+                    print("Filled")
+                    shape.brush_color = color
                     shape.draw(self, painter)
             self.update()
 
-    def change_line_color(self):
-        painter = QPainter(self.main_area)
+    def change_line_color(self,color):
+        painter = QPainter(self.external_area)
         for shape in self.shapes:
             if shape.is_excretion:
-                shape.line_color = self.line_color
+                shape.line_color = color
                 shape.draw(self, painter)
 
     def search_hits(self):
@@ -165,25 +183,18 @@ class MainWindowLogic(QMainWindow):
                     1].y() > shape.lower_y:
                     shape.is_excretion=True
 
+
     def re_drawing_areas(self):
-        self.main_area.fill(Qt.white)
-        #self.external_area.fill(Qt.white)
-        painter1 = QPainter(self.external_area)
-        #painter1.drawPixmap(QPoint(), self.external_area)
-        painter2 = QPainter(self.main_area)
-        #painter2.drawPixmap(QPoint(), self.main_area)
-        for shape in self.shapes_in_excretion_area:
-            shape.draw(self,painter1)
+        painter = QPainter(self.main_area)
         for shape in self.shapes:
-            shape.draw(self,painter2)
-        #self.update()
+            shape.draw(self, painter)
+        self.update()
 
 
 
 
 if __name__ == "__main__":
-    from Controllers import ControllerShape
-    from Controllers import ControllerMove
+    from Controllers import ControllerShape, ControllerMove, ControllerАccidentalClick
     import sys
 
     app = QApplication([])

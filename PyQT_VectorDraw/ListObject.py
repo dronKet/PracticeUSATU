@@ -29,3 +29,9 @@ class ShapeObject:
             painter.drawEllipse(rect.normalized())
         elif self.name == "line":
             painter.drawLine(self.upper_left_point+self.point, self.lower_right_point+self.point)
+
+        if self.is_excretion:
+            pen = QPen(Qt.black, 2, Qt.DashLine)
+            painter.setBrush(QColor(0,0,0,0))
+            painter.setPen(pen)
+            painter.drawRect(rect.normalized())
