@@ -1,10 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPoint, QRect, Qt
-from PyQt5.QtGui import QPainter, QColor, QPen
-from PyQt5.QtWidgets import QUndoStack, QUndoCommand
+from PyQt5.QtGui import QPainter, QColor, QPen, QPixmap
+from PyQt5.QtWidgets import QUndoStack, QUndoCommand, QColorDialog
 import ListObject
 import Logic
-from ListObject import ShapeObject
+from ListObject import *
 
 
 class Controller:
@@ -15,7 +15,7 @@ class Controller:
         self.delta_pos = QPoint(0, 0)
         self.last_pos = QPoint(0, 0)
         self.first_pos = QPoint(0, 0)
-        self.k = 0
+        self.shapes_op=ShapesOperations()
 
     def mouse_press_handler(self, event):
         pass
@@ -27,31 +27,25 @@ class Controller:
         pass
 
 
-class ControllerАccidentalClick(Controller):
+class ControllerAccidentalClick(Controller):
     def check_press_figure(self, shape, pos):
         if pos.x() > shape.upper_x and pos.y() > shape.upper_y and pos.x() < shape.lower_x and pos.y() < shape.lower_y:
             return True
 
-    def excretion_pressed_figure1(self, event):
-        for shape in self.main_window.shapes:
-            if self.check_press_figure(shape, event.pos()):
-                shape.is_excretion = True
-                shape.draw(self.main_window, QPainter(self.main_window.main_area))
-                self.main_window.update()
-
-    def excretion_pressed_figure(self, event):
+    def mouse_press_handler(self, event):
+        self.shapes_op.remove_excretion(self.main_window.shapes)
+        self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,QPainter(self.main_window.main_area))
         selected_shapes = list()
         temp_shape = 0
         for shape in self.main_window.shapes:
             if self.check_press_figure(shape, event.pos()):
                 selected_shapes.append(shape)
         if len(selected_shapes) > 1:
-            print("line48")
             number_of_nested = {}
             maximum = -1
             current_count = -1
             for selected_shape in selected_shapes:
-                current_count = selected_shape.in_excretion_shape(selected_shapes)
+                current_count = selected_shape.in_excretion_shapes(selected_shapes)
                 number_of_nested[current_count] = selected_shape
                 if maximum < current_count:
                     maximum = current_count
@@ -59,9 +53,22 @@ class ControllerАccidentalClick(Controller):
         elif len(selected_shapes) == 1:
             temp_shape = selected_shapes[0]
         if temp_shape != 0:
-            print("ok")
             temp_shape.is_excretion = True
             temp_shape.draw(self.main_window, QPainter(self.main_window.main_area))
+        self.main_window.update()
+
+
+class ControllerFill(Controller):
+    def fill(self, color):
+        painter = QPainter(self.main_window.main_area)
+        self.main_window.external_area.fill(QColor(0, 0, 0, 0))
+        for shape in self.main_window.shapes:
+            if shape.is_excretion:
+                shape.brush_color = color
+                # ControllerUndoRedo.undo_redo_stack.push(UndoRedoCommand())
+                shape.draw(self, painter)
+            if shape.in_excretion_shapes(self.main_window.shapes) != 0:
+                shape.draw(self, painter)
         self.main_window.update()
 
 
@@ -71,7 +78,6 @@ class ControllerMove(Controller):
         self.main_window.main_area.fill(Qt.white)
         for shape in self.main_window.shapes:
             if not shape.is_excretion:
-                print("drawed")
                 shape.draw(self, painter)
         self.main_window.update()
 
@@ -102,38 +108,76 @@ class ControllerMove(Controller):
                 shape.lower_right_point += shape.point
                 shape.upper_left_point += shape.point
                 shape.point = QPoint(0, 0)
-                ControllerUndoRedo.undo_redo_stack.push(UndoRedoCommand())
 
 
-class ControllerShape(Controller):
-    def draw_shape(self, is_choose_mode):
+class ControllerSelect(Controller):
+    def drawing_selected_rectangle(self):
         self.main_window.external_area.fill(QColor(0, 0, 0, 0))
         painter = QPainter(self.main_window.external_area)
         painter.setPen(self.main_window.line_color)
         painter.setRenderHint(QPainter.Antialiasing)
         rect = QRect(self.begin, self.destination)
-        if is_choose_mode:
-            pen = QPen(Qt.black, 2, Qt.DashLine)
-            painter.setPen(pen)
-            painter.drawRect(rect.normalized())
-        else:
-            if self.main_window.choosed_shape["rect"] == 1:
-                painter.drawRect(rect.normalized())
-            elif self.main_window.choosed_shape["ellips"] == 1:
-                painter.drawEllipse(rect.normalized())
-            elif self.main_window.choosed_shape["line"] == 1:
-                painter.drawLine(self.begin, self.destination)
+        pen = QPen(Qt.black, 2, Qt.DashLine)
+        painter.setPen(pen)
+        painter.drawRect(rect.normalized())
         self.main_window.update()
 
-    def mouse_press_handler(self, event, is_choose_mode=False):
+    def mouse_press_handler(self, event):
         self.begin = event.pos()
         self.destination = event.pos()
-        # self.draw_shape(is_choose_mode)
+        self.shapes_op.remove_excretion( self.main_window.shapes)
+        self.shapes_op.draw_only_shapes_array(self.main_window.shapes,self.main_window,QPainter(self.main_window.main_area))
 
-    def mouse_move_handler(self, event, is_choose_mode=False):
+    def mouse_move_handler(self, event):
         self.destination = event.pos()
         if self.destination != self.begin:
-            self.draw_shape(is_choose_mode)
+            self.drawing_selected_rectangle()
+
+    def mouse_release_handler(self, event):
+        self.destination = event.pos()
+        if self.destination != self.begin:
+            self.main_window.external_area.fill(QColor(0, 0, 0, 0))
+            selected_rectangle = [QColor(0,0,0), QColor(255,255,255), "rectangle", self.begin,
+                                 self.destination, 2]
+            selected_rectangle_object = ShapeObject(selected_rectangle)
+            print(len(self.main_window.shapes))
+            for shape in self.main_window.shapes:
+                if shape.in_shape(selected_rectangle_object):
+                    shape.is_excretion=True
+            self.shapes_op.draw_only_shapes_array(self.main_window.shapes,self.main_window,QPainter(self.main_window.main_area))
+        else:
+            self.main_window.tools["accidentalClick"].mouse_press_handler(event)
+
+
+class ControllerShape(Controller):
+    def __init__(self, window, string):
+        super().__init__(window)
+        self.string = string
+
+    def draw_shape(self):
+        self.main_window.external_area.fill(QColor(0, 0, 0, 0))
+        painter = QPainter(self.main_window.external_area)
+        painter.setPen(self.main_window.line_color)
+        painter.setRenderHint(QPainter.Antialiasing)
+        rect = QRect(self.begin, self.destination)
+        if self.string == "rectangle":
+            painter.drawRect(rect.normalized())
+        elif self.string == "ellips":
+            painter.drawEllipse(rect.normalized())
+        elif self.string == "line":
+            painter.drawLine(self.begin, self.destination)
+        self.main_window.update()
+
+    def mouse_press_handler(self, event):
+        self.shapes_op.remove_excretion( self.main_window.shapes)
+        self.shapes_op.draw_only_shapes_array(self.main_window.shapes,self.main_window,QPainter(self.main_window.main_area))
+        self.begin = event.pos()
+        self.destination = event.pos()
+
+    def mouse_move_handler(self, event):
+        self.destination = event.pos()
+        if self.destination != self.begin:
+            self.draw_shape()
 
     def mouse_release_handler(self, event, is_choose_mode=False):
         self.destination = event.pos()
@@ -142,32 +186,27 @@ class ControllerShape(Controller):
             painter.setPen(self.main_window.line_color)
             painter.setRenderHint(QPainter.Antialiasing)
             rect = QRect(self.begin, self.destination)
-            if is_choose_mode and self.destination != self.begin:
-                self.main_window.external_area.fill(QColor(0, 0, 0, 0))
-                self.main_window.excretion_coords = [self.begin, self.destination]
-                self.main_window.last_shapes_list = 1
-            else:
-                created_shape = False
-                if self.main_window.choosed_shape["ellips"] == 1:
-                    painter.drawEllipse(rect.normalized())
-                    created_shape = [self.main_window.line_color, self.main_window.brush_color, "ellips", self.begin,
-                                     self.destination, 2]
-                elif self.main_window.choosed_shape["rect"] == 1:
-                    painter.drawRect(rect.normalized())
-                    created_shape = [self.main_window.line_color, self.main_window.brush_color, "rect", self.begin,
-                                     self.destination, 2]
-                elif self.main_window.choosed_shape["line"] == 1:
-                    painter.drawLine(self.begin, self.destination)
-                    created_shape = [self.main_window.line_color, self.main_window.brush_color, "line", self.begin,
-                                     self.destination, 2]
-                created_shape = ShapeObject(created_shape)
-                self.main_window.shapes.append(created_shape)
-                self.main_window.last_shapes_list = self.main_window.shapes
-                self.main_window.undo_redo.undo_redo_stack.push(UndoRedoCommand(self.main_window.undo_redo))
+            created_shape = False
+            if self.string == "ellips":
+                painter.drawEllipse(rect.normalized())
+                created_shape = [self.main_window.line_color, self.main_window.brush_color, "ellips", self.begin,
+                                 self.destination, 2]
+            elif self.string == "rectangle":
+                painter.drawRect(rect.normalized())
+                created_shape = [self.main_window.line_color, self.main_window.brush_color, "rectangle", self.begin,
+                                 self.destination, 2]
+            elif self.string == "line":
+                painter.drawLine(self.begin, self.destination)
+                created_shape = [self.main_window.line_color, self.main_window.brush_color, "line", self.begin,
+                                 self.destination, 2]
+            created_shape = ShapeObject(created_shape)
+            self.main_window.shapes.append(created_shape)
+            self.main_window.last_shapes_list = self.main_window.shapes
+            self.main_window.undo_redo.undo_redo_stack.push(UndoRedoCommand(self.main_window.undo_redo))
+            self.main_window.update()
 
 
 class ControllerUndoRedo:
-
     def __init__(self, window):
         self.step_stack = []
         self.current_step = -1

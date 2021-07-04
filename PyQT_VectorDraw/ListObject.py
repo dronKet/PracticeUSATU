@@ -23,7 +23,7 @@ class ShapeObject:
         painter.setRenderHint(QPainter.Antialiasing)
         rect = QRect(self.upper_left_point + self.point, self.lower_right_point + self.point)
         painter.setBrush(self.brush_color)
-        if self.name == "rect":
+        if self.name == "rectangle":
             painter.drawRect(rect.normalized())
         elif self.name == "ellips":
             painter.drawEllipse(rect.normalized())
@@ -36,7 +36,7 @@ class ShapeObject:
             painter.setPen(pen)
             painter.drawRect(rect.normalized())
 
-    def in_excretion_shape(self, other_shapes):
+    def in_excretion_shapes(self, other_shapes):
         counter = 0
         for other_shape in other_shapes:
             if other_shape.is_excretion:
@@ -44,8 +44,30 @@ class ShapeObject:
                     counter += 1
         return counter
 
-    def shapes_count(self,shapes_list):
-        counter=0
-        for shape in shapes_list:
-            counter+=1
+    def in_shape(self, other_shape):
+        if other_shape.upper_x < self.upper_x and other_shape.upper_y < self.upper_y and other_shape.lower_x > self.lower_x and other_shape.lower_y > self.lower_y:
+            return True
+        return False
+
+
+class ShapesOperations():
+    def shapes_count(self, shapes_array):
+        counter = 0
+        for shape in shapes_array:
+            counter += 1
         return counter
+
+    def remove_excretion(self, shapes_array):
+        for shape in shapes_array:
+            shape.is_excretion = False
+
+    def draw_only_shapes_array(self, shapes_array, window, painter):
+        window.main_area.fill(Qt.white)
+        for shape in shapes_array:
+            shape.draw(window, painter)
+        window.update()
+
+    def draw_shapes_array(self, shapes_array, window, painter):
+        for shape in shapes_array:
+            shape.draw(window, painter)
+        window.update()
