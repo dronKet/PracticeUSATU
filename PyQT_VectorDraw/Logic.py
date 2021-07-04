@@ -32,7 +32,9 @@ class MainWindowLogic(QMainWindow):
         self.begin = QPoint()
         self.destination = QPoint()
         self.last_shapes_list=self.shapes
+        self.undo_redo=ControllerUndoRedo(self)
         self.add_functions()
+
 
     def add_functions(self):
         self.ui.actionRectangle.triggered.connect(lambda: self.choose_shape("rect"))
@@ -43,6 +45,11 @@ class MainWindowLogic(QMainWindow):
         self.ui.actionCleanWindow.triggered.connect(self.clean_window)
         self.ui.moveAction.triggered.connect(self.move_method)
         self.ui.lineAction.triggered.connect(lambda: self.choose_shape("line"))
+        self.ui.undoAction.triggered.connect(self.undo_redo.undo_redo_stack.undo)
+        self.ui.redoAction.triggered.connect(self.undo_redo.undo_redo_stack.redo)
+        #self.ui.undoAction.triggered.connect(ControllerUndoRedo.undo_redo_stack.undo)
+        #self.ui.redoAction.triggered.connect(ControllerUndoRedo.undo_redo_stack.redo)
+
 
     def clean_window(self):
         self.off_tools()
@@ -78,20 +85,20 @@ class MainWindowLogic(QMainWindow):
     def are_selected_items(self):
         for shape in self.shapes:
             if shape.is_excretion:
-                print("ok")
                 return True
         return False
 
     def mousePressEvent(self, event):
         # fill_control=ControllerFill(self)
         if event.buttons() & Qt.LeftButton:
+            if self.are_selected_items() and not self.is_move_mode:
+                self.rm_excretion()
+                self.re_drawing_areas()
             if self.is_drawing:
                 self.control.mouse_press_handler(event)
             elif self.are_selected_items() and self.is_move_mode:
-                print("is_move_mode")
                 self.control_move.mouse_press_handler(event)
             elif self.is_choose_mode:
-                print("is_choose_mode")
                 self.control.mouse_press_handler(event, self.is_choose_mode)
 
     def mouseMoveEvent(self, event):
@@ -139,32 +146,35 @@ class MainWindowLogic(QMainWindow):
             if self.is_drawing:
                 self.last_shapes_list = None
                 self.control.mouse_release_handler(event)
+                self.re_drawing_areas()
 
             elif self.is_move_mode:
                 self.is_choose_mode = False
                 self.control_move.mouse_release_handler(event)
 
             elif self.is_choose_mode:
+                self.last_shapes_list = None
                 self.control.mouse_release_handler(event, self.is_choose_mode)
                 self.search_hits()
                 self.re_drawing_areas()
 
-            if self.last_shapes_list == None:
+            if self.last_shapes_list==None:
                 self.rm_excretion()
                 random_click=ControllerАccidentalClick(self)
                 random_click.excretion_pressed_figure(event)
                 self.off_tools()
                 self.last_shapes_list=list()
 
-
     def fill(self,color):
             painter = QPainter(self.main_area)
             self.external_area.fill(QColor(0, 0, 0, 0))
             for shape in self.shapes:
                 if shape.is_excretion:
-                    print("Filled")
                     shape.brush_color = color
+                    #ControllerUndoRedo.undo_redo_stack.push(UndoRedoCommand())
                     shape.draw(self, painter)
+                if shape.in_excretion_shape(self.shapes)!=0:
+                    shape.draw(self,painter)
             self.update()
 
     def change_line_color(self,color):
@@ -172,6 +182,7 @@ class MainWindowLogic(QMainWindow):
         for shape in self.shapes:
             if shape.is_excretion:
                 shape.line_color = color
+                ControllerUndoRedo.undo_redo_stack.push(UndoRedoCommand())
                 shape.draw(self, painter)
 
     def search_hits(self):
@@ -185,6 +196,7 @@ class MainWindowLogic(QMainWindow):
 
 
     def re_drawing_areas(self):
+        self.main_area.fill(Qt.white)
         painter = QPainter(self.main_area)
         for shape in self.shapes:
             shape.draw(self, painter)
@@ -194,9 +206,8 @@ class MainWindowLogic(QMainWindow):
 
 
 if __name__ == "__main__":
-    from Controllers import ControllerShape, ControllerMove, ControllerАccidentalClick
+    from Controllers import ControllerShape, ControllerMove, ControllerАccidentalClick,ControllerUndoRedo,UndoRedoCommand
     import sys
-
     app = QApplication([])
     window = MainWindowLogic()
     window.show()
