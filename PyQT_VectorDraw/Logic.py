@@ -2,7 +2,7 @@ import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QColorDialog, \
-    QMainWindow
+    QMainWindow, QFormLayout, QGroupBox, QLabel, QScrollArea, QFileDialog
 from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QPen
 from PyQt5.QtCore import Qt, QPoint, QRect, QLineF, pyqtSignal
 from Form import Ui_MainWindow
@@ -20,9 +20,24 @@ class MainWindow(QMainWindow):
         self.widget = DrawingScene()
         self.widget.add_functions(self.ui)
         self.setCentralWidget(self.widget)
+        #formLayout =QFormLayout()
+        #groupBox = QGroupBox("This Is Group Box")
+        #labelLis = []
+        #comboList = []
+       # groupBox.setLayout(formLayout)
+        #scroll = QScrollArea()
+        #scroll.setWidget(self.widget)
+        #scroll.setWidgetResizable(True)
+        #scroll.setFixedHeight(900)
+        #layout = QVBoxLayout(self)
+        #layout.addWidget(scroll)
+        #self.setLayout(layout)
+        #self.setStyleSheet("background-color: black;")
+        #self.widget.redrawing_scene()
+        #self.widget.update()
 
 
-class DrawingScene(QOpenGLWidget):
+class DrawingScene(QWidget):
     def __init__(self):
         super().__init__()
         self.tools = {}
@@ -49,6 +64,11 @@ class DrawingScene(QOpenGLWidget):
         self.tools["accidentalClick"] = ControllerAccidentalClick(self)
         self.tools["fill"] = ControllerFill(self)
 
+    def redrawing_scene(self):
+        painter = QPainter(self)
+        painter.drawPixmap(QPoint(), self.main_area)
+        painter.drawPixmap(QPoint(), self.external_area)
+
     def add_functions(self, ui):
         ui.actionRectangle.triggered.connect(lambda: self.change_tool("rectangle"))
         ui.actionEllips.triggered.connect(lambda: self.change_tool("ellips"))
@@ -61,9 +81,20 @@ class DrawingScene(QOpenGLWidget):
         ui.actionCleanWindow.triggered.connect(self.clean_window)
         ui.undoAction.triggered.connect(self.undo_redo.undo_redo_stack.undo)
         ui.redoAction.triggered.connect(self.undo_redo.undo_redo_stack.redo)
+        ui.changeSizeAction.triggered.connect(self.change_scene_size)
+        #ui.saveAction.triggered.connect(self.fileSave)
+        #ui.saveAsAction.triggered.connect(self.fileSaveAs)
+        #ui.loadAction.triggered.connect(self.fileOpen)
+
+
+
 
     def change_tool(self, name_of_tool):
         self.current_tool = self.tools[name_of_tool]
+
+    def change_scene_size(self,):
+        self.setFixedWidth(250)
+        self.setFixedHeight(250)
 
     def change_color(self,ui):
         color = QColorDialog.getColor()
