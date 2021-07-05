@@ -1,0 +1,27 @@
+body {
+    background-color: #efefef;
+}
+
+.login-container {
+    height: 75vh;
+    width: 100%
+}
+
+.login-form {
+    max-width: 100%;
+    width: 370px;
+    padding: 15px;
+    margin: auto;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    background-color: white;
+}
+
+.register-form {
+    max-width: 100%;
+    width:700px;
+    padding: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    background-color: white;
+}

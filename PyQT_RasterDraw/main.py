@@ -1,11 +1,12 @@
 from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMainWindow
 
-Form, Window = uic.loadUiType("GraphicsEditor.ui")
+from GUI import Ui_MainWindow
+from Logic import MainWindowLogic
+
 
 app = QApplication([])
-window = Window()
-form = Form()
-form.setupUi(window)
-window.show()
+ui = Ui_MainWindow()
+window = MainWindowLogic(ui)
 app.exec()
+

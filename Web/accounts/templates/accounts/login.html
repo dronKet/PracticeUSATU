@@ -1,0 +1,30 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Login Page | User Login{% endblock %}
+
+{% block content %}
+
+    <div class="login-container d-flex align-items-center justify-content-center">
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            <h1 class="mb-4 font-weight-light text-uppercase text-center">Login</h1>
+            {% for message in messages %}
+            <p class="text-center mb-2">{{ message }}</p>
+            {% endfor %}
+            <div class="mb-3 form-group">
+                <label for="username" class="mb-1">Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Username">
+            </div>
+            <div class="mb-3 form-group">
+                <label for="password" class="mb-1">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Password">
+            </div>
+            <div class="mb-4 forgot-link d-flex align-items-center justify-content-center">
+                Forgot your password?&nbsp;&nbsp;&nbsp;&nbsp;<a href="#">Click here</a>
+            </div>
+            <input type="submit" class="btn btn-primary btn-block btn-lg" style="width: 100%;" value="Login">
+            <p class="mt-4 font-weight-normal text-center">Don't have an account? <a href="{% url 'signup' %}">Sign Up</a></p>
+        </form>
+    </div>
+
+{% endblock %}
