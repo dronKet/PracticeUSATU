@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'WellProject.apps.WellprojectConfig',
     'numpy',
     'django_extensions',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [

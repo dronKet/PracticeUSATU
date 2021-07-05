@@ -3,7 +3,10 @@
 {% block title %}Homepage{% endblock title %}
 
 {% block content %}
-    <h1>Welcome to my homepage.</h1>
-
+    <h1>Homepage.</h1>
+    <p>Welcome to my site, visitor!</p>
+    <p>
+        <strong>Total users registered: </strong> {{ count }}
+    </p>
     <p><a href="{% url 'index'%}">Visit Wells Informations and Coordinates</a></p>
 {% endblock %}
