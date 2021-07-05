@@ -12,6 +12,10 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         MainWindow.setCentralWidget(self.centralwidget)
+
+
+
+
         #self.menubar = QtWidgets.QMenuBar(MainWindow)
         #self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
         #self.menubar.setObjectName("menubar")

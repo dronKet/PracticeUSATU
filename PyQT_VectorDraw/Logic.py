@@ -20,6 +20,10 @@ class MainWindow(QMainWindow):
         self.widget = DrawingScene()
         self.widget.add_functions(self.ui)
         self.setCentralWidget(self.widget)
+        self.scrollArea = QtWidgets.QScrollArea(self)
+       # self.scrollArea.setGeometry(200,200,200,200)
+
+        #self.setCentralWidget(self.scrollArea)
         #formLayout =QFormLayout()
         #groupBox = QGroupBox("This Is Group Box")
         #labelLis = []
@@ -44,6 +48,7 @@ class DrawingScene(QWidget):
         # self.tools["fill"]=ControllerFill(self)
         # self.tools["change_color"]=ControllerChangeColor(self)
         self.brush_color = QColor(255, 255, 255)
+        self.file_path = ''
         self.line_color = QColor(0, 0, 0)
         self.color = QColor(0, 0, 0)
         self.shapes = list()
@@ -82,11 +87,33 @@ class DrawingScene(QWidget):
         ui.undoAction.triggered.connect(self.undo_redo.undo_redo_stack.undo)
         ui.redoAction.triggered.connect(self.undo_redo.undo_redo_stack.redo)
         ui.changeSizeAction.triggered.connect(self.change_scene_size)
-        #ui.saveAction.triggered.connect(self.fileSave)
-        #ui.saveAsAction.triggered.connect(self.fileSaveAs)
-        #ui.loadAction.triggered.connect(self.fileOpen)
+        ui.saveAction.triggered.connect(self.fileSave)
+        ui.saveAsAction.triggered.connect(self.fileSaveAs)
+        ui.loadAction.triggered.connect(self.fileLoad)
 
+    def fileLoad(self):
+        file = QFileDialog.getOpenFileName(self, "", "", "*.png;;*.jpg")
+        self.file_path = file
 
+        if not self.file_path == '':
+            l = self.file_path[0].split('.')
+            print(l[-1])
+            self.main_area.load(self.file_path[0], l[-1])
+
+    def fileSave(self):
+        if self.file_path == '':
+            self.fileSaveAs()
+        else:
+            l = self.file_path[0].split('.')
+            print(l[-1])
+            self.main_area.save(self.file_path[0], l[-1])
+
+    def fileSaveAs(self):
+        file = QFileDialog.getSaveFileName(self, "", "untitled.png", "*.png;;*.jpg;;*.*")
+        # print(QtGui.QImageWriter.supportedImageFormats())
+        if not file == '':
+            self.file_path = file
+            self.fileSave()
 
 
     def change_tool(self, name_of_tool):
