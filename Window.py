@@ -20,16 +20,57 @@ class Window(QWidget):
         self.view.setSelectionMode(QAbstractItemView.SingleSelection)
         # self.view.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.view.setColumnHidden(0, True)
-        # self.view.resizeColumnsToContents()
-        # self.view.resizeRowsToContents()
+        self.view.resizeColumnsToContents()
+        self.view.resizeRowsToContents()
         # self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         # delegate = ColorDelegate(self.view)
         # self.view.setItemDelegate(delegate)
 
-        vbox = QVBoxLayout(self)
+        self.firstColor = QPushButton(self)
+        self.firstColor.setStyleSheet('QPushButton {background-color: white; border: none;}')
+        self.firstColor.clicked.connect(self.clickedFirst)
+
+        self.secondColor = QPushButton(self)
+        self.secondColor.setStyleSheet('QPushButton {background-color: black; border: none;}')
+        self.secondColor.clicked.connect(self.clickedSecond)
+
+        labelWellName = QLabel('TestName')
+        labelWellName.setContentsMargins(0, 0, 0, 0)
+
+        labelPalletName = QLabel('Палитра')
+        labelPalletName.setContentsMargins(0, 0, 0, 0)
+
+        hboxColorFirst = QHBoxLayout()
+        hboxColorFirst.addWidget(QLabel('От'), alignment=Qt.AlignLeft)
+        hboxColorFirst.addWidget(self.firstColor, alignment=Qt.AlignLeft)
+        hboxColorFirst.setContentsMargins(0, 0, 0, 0)
+        hboxColorFirst.setSpacing(0)
+
+        hboxColorSecond = QHBoxLayout()
+        hboxColorSecond.addWidget(QLabel('До'), alignment=Qt.AlignLeft)
+        hboxColorSecond.addWidget(self.secondColor, alignment=Qt.AlignLeft)
+        hboxColorSecond.setContentsMargins(0, 0, 0, 0)
+        hboxColorSecond.setSpacing(0)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(labelWellName)
+        vbox.addWidget(labelPalletName)
+        vbox.addLayout(hboxColorFirst)
+        vbox.addLayout(hboxColorSecond)
         vbox.addWidget(self.view)
+
         self.setLayout(vbox)
+
+    def clickedFirst(self):
+        color = QColorDialog().getColor()
+        if color.isValid():
+            self.firstColor.setStyleSheet('QPushButton {background-color: ' + color.name() + '; border: none;}')
+
+    def clickedSecond(self):
+        color = QColorDialog().getColor()
+        if color.isValid():
+            self.secondColor.setStyleSheet('QPushButton {background-color: ' + color.name() + '; border: none;}')
 
 
 class ColorDelegate(QStyledItemDelegate):
