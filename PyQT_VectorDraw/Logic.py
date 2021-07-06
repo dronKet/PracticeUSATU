@@ -2,7 +2,7 @@ import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QColorDialog, \
-    QMainWindow, QFormLayout, QGroupBox, QLabel, QScrollArea, QFileDialog
+    QMainWindow, QFormLayout, QGroupBox, QLabel, QScrollArea, QFileDialog, QDialog, QLineEdit
 from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QPen
 from PyQt5.QtCore import Qt, QPoint, QRect, QLineF, pyqtSignal
 from Form import Ui_MainWindow
@@ -53,6 +53,32 @@ class DrawingScene(QWidget):
         self.tools["select"] = ControllerSelect(self)
         self.tools["accidentalClick"] = ControllerAccidentalClick(self)
         self.tools["fill"] = ControllerFill(self)
+        self.shapes_op=ShapesOperations()
+
+    def showdialog(self):
+        dlg = QDialog()
+        dlg.resize(300,200)
+        label1=QLabel("Ширина", dlg)
+        label2=QLabel("Длина", dlg)
+        label1.move(25,50)
+        label2.move(25,100)
+        line1 = QLineEdit("800", dlg)
+        line1.move(100, 50)
+        line2 = QLineEdit("600", dlg)
+        line2.move(100, 100)
+        dlg.setWindowTitle("Dialog")
+        dlg.setWindowModality(Qt.ApplicationModal)
+        dlg.exec_()
+        self.change_scene_size(int(line1.text()),int(line2.text()))
+
+    def change_scene_size(self,width, height):
+        self.setFixedWidth(width)
+        self.setFixedHeight(height)
+        self.main_area = QPixmap(self.rect().size())
+        self.main_area.fill(Qt.white)
+        self.external_area = QPixmap(self.rect().size())
+        self.external_area.fill(QColor(0, 0, 0, 0))
+        self.shapes_op.draw_only_shapes_array(self.shapes,self,QPainter(self.main_area))
 
     def redrawing_scene(self):
         painter = QPainter(self)
@@ -71,7 +97,8 @@ class DrawingScene(QWidget):
         ui.actionCleanWindow.triggered.connect(self.clean_window)
         ui.undoAction.triggered.connect(self.undo_redo.undo_redo_stack.undo)
         ui.redoAction.triggered.connect(self.undo_redo.undo_redo_stack.redo)
-        ui.changeSizeAction.triggered.connect(self.change_scene_size)
+        #ui.changeSizeAction.triggered.connect(self.change_scene_size)
+        ui.changeSizeAction.triggered.connect(self.showdialog)
         ui.saveAction.triggered.connect(self.fileSave)
         ui.saveAsAction.triggered.connect(self.fileSaveAs)
         ui.loadAction.triggered.connect(self.fileLoad)
@@ -103,9 +130,8 @@ class DrawingScene(QWidget):
     def change_tool(self, name_of_tool):
         self.current_tool = self.tools[name_of_tool]
 
-    def change_scene_size(self,):
-        self.setFixedWidth(250)
-        self.setFixedHeight(250)
+
+
 
     def change_color(self,ui):
         color = QColorDialog.getColor()

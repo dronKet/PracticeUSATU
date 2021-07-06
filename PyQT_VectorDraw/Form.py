@@ -128,6 +128,7 @@ class Ui_MainWindow(object):
         self.changeSizeAction.setObjectName("changesizeaction")
 
 
+
         #self.menubar.addAction(self.menuFile.menuAction())
         self.toolBar.addAction(self.actionEllips)
         self.toolBar.addAction(self.actionRectangle)
