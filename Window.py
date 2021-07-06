@@ -10,11 +10,6 @@ class Window(QWidget):
         self.model = Model(self)
         self.model.loadData(testData)
 
-        # self.model.TableModel.setHeaderData(0, Qt.Orientation.Horizontal, "Id")
-        # self.model.TableModel.setHeaderData(1, Qt.Orientation.Horizontal, "X")
-        # self.model.TableModel.setHeaderData(2, Qt.Orientation.Horizontal, "Y")
-        # self.model.TableModel.setHeaderData(3, Qt.Orientation.Horizontal, "Z")
-
         self.view = QTableView(self)
         self.view.setModel(self.model.TableModel)
         self.view.setSelectionMode(QAbstractItemView.SingleSelection)
@@ -22,8 +17,6 @@ class Window(QWidget):
         self.view2 = QTableView(self)
         self.view2.setModel(self.model.TableModel)
         self.view2.setSelectionMode(QAbstractItemView.SingleSelection)
-        # self.view.setColumnHidden(0, True)
-        # self.view.resizeRowsToContents()
 
         delegate = TableDelegate(self.view)
         self.view.setItemDelegate(delegate)
