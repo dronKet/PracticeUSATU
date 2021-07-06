@@ -27,9 +27,28 @@ class Model(QObject):
         self.connectionName = "TRAJECTORY"
         self.driver = "QSQLITE"
 
-        self.createConnection()
-        self.tableModel = QSqlTableModel(self, QSqlDatabase.database(self.connectionName))
+        self.db = QSqlDatabase.addDatabase("QSQLITE")
+        if not self.db.open():
+            QMessageBox.critical(None, qApp.tr("Cannot open database"),
+                                 qApp.tr("Unable to establish a database connection.\n"
+                                         "This example needs SQLite support. Please read "
+                                         "the Qt SQL driver documentation for information "
+                                         "how to build it.\n\n"
+                                         "Click Cancel to exit."),
+                                 QMessageBox.Cancel)
+
+        self.db.exec(f'CREATE TEMP TABLE {self.tableName} (Id INTEGER PRIMARY KEY AUTOINCREMENT, '
+                      f'X REAL, Y REAL, Z REAL)')
+
+        self.tableModel = QSqlTableModel(None, self.db)
+        self.tableModel.setTable(self.tableName)
         self.tableModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.tableModel.select()
+
+        self.TableModel.setHeaderData(0, Qt.Orientation.Horizontal, "Id")
+        self.TableModel.setHeaderData(1, Qt.Orientation.Horizontal, "X")
+        self.TableModel.setHeaderData(2, Qt.Orientation.Horizontal, "Y")
+        self.TableModel.setHeaderData(3, Qt.Orientation.Horizontal, "Z")
 
         self.xMin = float('inf')
         self.yMin = float('inf')
@@ -38,54 +57,15 @@ class Model(QObject):
         self.yMax = float('-inf')
         self.zMax = float('-inf')
 
-    def createConnection(self):
-        dataBase = QSqlDatabase.addDatabase(self.driver, self.connectionName)
-        dataBase.setDatabaseName(self.dataBaseName)
-        if not dataBase.open():
-            QMessageBox.critical(None, qApp.tr("Cannot open database"),
-                                 qApp.tr("Unable to establish a database connection.\n"
-                                         "This example needs SQLite support. Please read "
-                                         "the Qt SQL driver documentation for information "
-                                         "how to build it.\n\n"
-                                         "Click Cancel to exit."),
-                                 QMessageBox.Cancel)
-            return False
-
-    def loadData(self, data):
-        dataBase = QSqlDatabase.database(self.connectionName)
-        dataBase.exec(f'DROP TABLE IF EXISTS {self.tableName}')
-        dataBase.exec(f'CREATE TEMP TABLE {self.tableName} (Id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                      f'X REAL, Y REAL, Z REAL)')
-        self.tableModel.setTable(self.tableName)
-
-        insertDataQuery = QSqlQuery(dataBase)
+    def FillData(self, data):
         for X, Y, Z in data:
-            # record = self.tableModel.record()
-            # record.remove(record.indexOf("Id"))
-            # record.setValue("X", X)
-            # record.setValue("Y", Y)
-            # record.setValue("Z", Z)
-
-            # if self.tableModel.insertRecord(-1, record):
-            #     self.tableModel.submitAll()
-            # else:
-            #     dataBase.rollback()
-            #     QMessageBox.warning(None, "Database Error",
-            #                         insertDataQuery.lastError().text())
-
-            if not insertDataQuery.exec(f'INSERT INTO {self.tableName} (X, Y, Z) VALUES ({X}, {Y}, {Z})'):
-                QMessageBox.warning(None, "Database Error",
-                                    insertDataQuery.lastError().text())
-            else:
-                self.xMin = min(self.xMin, X)
-                self.yMin = min(self.yMin, Y)
-                self.zMin = min(self.zMin, Z)
-                self.xMax = max(self.xMax, X)
-                self.yMax = max(self.yMax, Y)
-                self.zMax = max(self.zMax, Z)
-
-        insertDataQuery.finish()
-        self.tableModel.select()
+            record = QSqlRecord()
+            record.append(QSqlField("X"))
+            record.append(QSqlField("Y"))
+            record.append(QSqlField("Z"))
+            record.setValue("X", X)
+            record.setValue("Y", Y)
+            record.setValue("Z", Z)
 
     @property
     def TableModel(self):
