@@ -19,26 +19,11 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         self.widget = DrawingScene()
         self.widget.add_functions(self.ui)
-        self.setCentralWidget(self.widget)
-        self.scrollArea = QtWidgets.QScrollArea(self)
-       # self.scrollArea.setGeometry(200,200,200,200)
-
-        #self.setCentralWidget(self.scrollArea)
-        #formLayout =QFormLayout()
-        #groupBox = QGroupBox("This Is Group Box")
-        #labelLis = []
-        #comboList = []
-       # groupBox.setLayout(formLayout)
-        #scroll = QScrollArea()
-        #scroll.setWidget(self.widget)
-        #scroll.setWidgetResizable(True)
-        #scroll.setFixedHeight(900)
-        #layout = QVBoxLayout(self)
-        #layout.addWidget(scroll)
-        #self.setLayout(layout)
-        #self.setStyleSheet("background-color: black;")
-        #self.widget.redrawing_scene()
-        #self.widget.update()
+        #self.setCentralWidget(self.widget)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(self.widget)
+        self.setCentralWidget(scroll)
 
 
 class DrawingScene(QWidget):
@@ -114,7 +99,6 @@ class DrawingScene(QWidget):
         if not file == '':
             self.file_path = file
             self.fileSave()
-
 
     def change_tool(self, name_of_tool):
         self.current_tool = self.tools[name_of_tool]
