@@ -17,7 +17,7 @@ class ShapeObject:
         self.point = QPoint(0, 0)
         self.is_excretion = False
 
-    def draw(self, window, painter):
+    def draw(self, painter):
         pen = QPen(self.line_color, self.line_thickness, Qt.SolidLine)
         painter.setPen(pen)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -64,10 +64,11 @@ class ShapesOperations():
     def draw_only_shapes_array(self, shapes_array, window, painter):
         window.main_area.fill(Qt.white)
         for shape in shapes_array:
-            shape.draw(window, painter)
+            shape.draw(painter)
         window.update()
 
     def draw_shapes_array(self, shapes_array, window, painter):
         for shape in shapes_array:
-            shape.draw(window, painter)
+            shape.draw(painter)
         window.update()
+

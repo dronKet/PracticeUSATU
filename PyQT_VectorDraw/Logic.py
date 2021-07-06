@@ -1,10 +1,11 @@
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtSvg import QSvgGenerator
 from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QColorDialog, \
     QMainWindow, QFormLayout, QGroupBox, QLabel, QScrollArea, QFileDialog, QDialog, QLineEdit
 from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QPen
-from PyQt5.QtCore import Qt, QPoint, QRect, QLineF, pyqtSignal
+from PyQt5.QtCore import Qt, QPoint, QRect, QLineF, pyqtSignal, QSize
 from Form import Ui_MainWindow
 
 
@@ -80,11 +81,6 @@ class DrawingScene(QWidget):
         self.external_area.fill(QColor(0, 0, 0, 0))
         self.shapes_op.draw_only_shapes_array(self.shapes,self,QPainter(self.main_area))
 
-    def redrawing_scene(self):
-        painter = QPainter(self)
-        painter.drawPixmap(QPoint(), self.main_area)
-        painter.drawPixmap(QPoint(), self.external_area)
-
     def add_functions(self, ui):
         ui.actionRectangle.triggered.connect(lambda: self.change_tool("rectangle"))
         ui.actionEllips.triggered.connect(lambda: self.change_tool("ellips"))
@@ -108,20 +104,34 @@ class DrawingScene(QWidget):
         self.file_path = file
 
         if not self.file_path == '':
-            l = self.file_path[0].split('.')
-            print(l[-1])
-            self.main_area.load(self.file_path[0], l[-1])
+            path_list = self.file_path[0].split('.')
+            print(path_list[-1])
+            self.main_area.load(self.file_path[0], path_list[-1])
 
     def fileSave(self):
         if self.file_path == '':
             self.fileSaveAs()
         else:
-            l = self.file_path[0].split('.')
-            print(l[-1])
-            self.main_area.save(self.file_path[0], l[-1])
+            path_list = self.file_path[0].split('.')
+            if path_list[-1]== 'svg':
+                self.generate_svg()
+            else:
+                self.main_area.save(self.file_path[0], path_list[-1])
+
+    def generate_svg(self):
+        generator = QSvgGenerator()
+        generator.setFileName(self.file_path[0])
+        generator.setSize(QSize(self.width(), self.height()))
+        generator.setViewBox(QRect(0, 0,self.width(), self.height()))
+        svg_painter = QPainter(generator)
+        svg_painter.fillRect(QRect(0, 0,self.width(), self.height()), Qt.white)
+        self.shapes_op.draw_only_shapes_array(self.shapes,self,svg_painter)
+        #self.shapes[0].draw(svg_painter)
+        svg_painter.end()
+
 
     def fileSaveAs(self):
-        file = QFileDialog.getSaveFileName(self, "", "untitled.png", "*.png;;*.jpg;;*.*")
+        file = QFileDialog.getSaveFileName(self, "", "untitled.svg", "*.png;;*.jpg;;*.svg;;*.*")
         # print(QtGui.QImageWriter.supportedImageFormats())
         if not file == '':
             self.file_path = file
@@ -129,9 +139,6 @@ class DrawingScene(QWidget):
 
     def change_tool(self, name_of_tool):
         self.current_tool = self.tools[name_of_tool]
-
-
-
 
     def change_color(self,ui):
         color = QColorDialog.getColor()

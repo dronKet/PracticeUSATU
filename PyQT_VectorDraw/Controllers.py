@@ -54,7 +54,7 @@ class ControllerAccidentalClick(Controller):
             temp_shape = selected_shapes[0]
         if temp_shape != 0:
             temp_shape.is_excretion = True
-            temp_shape.draw(self.main_window, QPainter(self.main_window.main_area))
+            temp_shape.draw(QPainter(self.main_window.main_area))
         self.main_window.update()
 
 
@@ -66,9 +66,9 @@ class ControllerFill(Controller):
             if shape.is_excretion:
                 shape.brush_color = color
                 # ControllerUndoRedo.undo_redo_stack.push(UndoRedoCommand())
-                shape.draw(self, painter)
+                shape.draw(painter)
             if shape.in_excretion_shapes(self.main_window.shapes) != 0:
-                shape.draw(self, painter)
+                shape.draw(painter)
         self.main_window.update()
 
 
@@ -78,14 +78,14 @@ class ControllerMove(Controller):
         self.main_window.main_area.fill(Qt.white)
         for shape in self.main_window.shapes:
             if not shape.is_excretion:
-                shape.draw(self, painter)
+                shape.draw(painter)
         self.main_window.update()
 
     def draw_shape(self, painter):
         for shape in self.main_window.shapes:
             if shape.is_excretion:
                 shape.point = self.delta_pos
-                shape.draw(self, painter)
+                shape.draw(painter)
         self.main_window.update()
 
     def mouse_press_handler(self, event):
@@ -231,7 +231,7 @@ class ControllerUndoRedo:
         self.main_window.main_area.fill(Qt.white)
         painter = QPainter(self.main_window.main_area)
         for shape in self.main_window.shapes:
-            shape.draw(self.main_window, painter)
+            shape.draw(painter)
             self.main_window.update()
 
     def undo(self):
