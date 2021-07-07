@@ -3,7 +3,7 @@ body {
 }
 
 .login-container {
-    height: 75vh;
+    height: 100vh;
     width: 100%
 }
 
@@ -24,4 +24,141 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 15px;
     background-color: white;
+}
+
+.main {
+    margin-top: 6px;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: space-between;
+}
+
+.main > div {
+    padding: 5px;
+    border: 1px solid rgb(129, 129, 129);
+    text-align: center;
+}
+
+svg {
+    max-width: 100%;
+}
+
+.nav-nav {
+    width: 80%;
+    margin: auto;
+}
+
+.log-out {
+    margin-left: 10px;
+    font-size: 18px;
+}
+
+.log-out:hover {
+    transform: scale(1.05);
+    text-decoration: underline;
+    transition: all .6s ease;
+}
+
+.nav-home {
+    font-size: 18px;
+}
+
+.nav-home:hover {
+    transform: scale(1.05);
+    transition: all .6s ease;
+}
+
+.first h3, .second h3, .buttons h3 {
+    margin: 0;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.first ul {
+    list-style: none;
+    text-align: left;
+    padding: 0;
+    margin: 10px;
+}
+
+.first ul li {
+    padding: 5px 10px;
+    margin: 2px;
+    font-size: 1.1em;
+    background-color: #d8d8d8;
+    cursor: pointer;
+}
+
+.first ul li:hover {
+    background-color: #fff;
+    transform: scale(1.07);
+}
+
+.second h4 {
+    margin: 10px 0 0 0;
+}
+
+table {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    background: #333;
+    color: white;
+    font-weight: bold;
+    cursor: s-resize;
+    background-repeat: no-repeat;
+    background-position: 3% center;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: center;
+    padding: 8px;
+}
+
+.tick line{
+    opacity: 0.1;
+}
+
+.content-center {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.buttons-container button {
+    margin: 10px 2px;
+    padding: 7px 1px;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+.ddd {
+    display: flex;
+    flex-direction: column;
+}
+
+.ddd input {
+    display: inline-block;
+}
+
+.file_print {
+    width: 100%;
+    height: 200px;
+    overflow-y: scroll;
+    background: #FEFEFE;
+    border-radius:5px;
 }

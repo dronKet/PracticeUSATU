@@ -1,20 +1,50 @@
-from django.shortcuts import render
+import datetime
 
-from .mocks import Well
-from .models import WellModel, CoordinateModel
+from django.contrib.auth.decorators import login_required
+from .models import UploadFileModel
+from django.shortcuts import render
+import json
+
+from .models import WellModel, CoordinateModel, FolderModel
 
 
 # Create your views here.
+@login_required(login_url='login')
 def index(request):
-    # wells = Well.all()
+    # wells = WellModel.objects.all()
+    # coordinates = CoordinateModel.objects.all()
+    # filess = UploadFileModel.objects.all()
+    # dataset = []
+    # for well in wells:
+    #     coordinat = []
+    #     for coord in coordinates:
+    #         if coord.well_id == well.id:
+    #             coordinat.append({'x': coord.X, 'y': coord.Y, 'z': coord.Z})
+    #     element = {'id': well.id, 'name': well.name, 'coordinates': coordinat}
+    #     dataset.append(element)
+    # data = json.dumps(dataset)
+
+    # processing uploaded data
+    f = []
+    if request.method == 'POST':
+        files = request.FILES.getlist('uploadfiles')
+        filename = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        folder = FolderModel.objects.create(folder_name=filename)
+        for ff in files:
+            with open(ff, 'r') as file:
+                content = file.read()
+            f.append(ff.name)
+            # Read all files content for getting well_name and coords X, Y, Z
+
+            # Create well objects in database
+            well = WellModel.objects.create(folder_id=folder.id, well_name=ff.name)
+
+            # Model using to read and save data to another database
+            UploadFileModel.objects.create(file=ff).save()
+
+    folders = FolderModel.objects.all()
     wells = WellModel.objects.all()
-    coord = CoordinateModel.objects.all()
-    return render(request, 'WellProject/index.html', {'wells': wells, 'coords': coord})
+    coords = CoordinateModel.objects.all()
 
-
-def show(request, id):
-    # well = Well.find(id)
-    # mylist = zip(well['Coordinate']['x'], well['Coordinate']['y'], well['Coordinate']['z'])
-    well = WellModel.objects.get(id=id)
-    coords = CoordinateModel.objects.filter(well_id=id)
-    return render(request, 'WellProject/show.html', {'well': well, 'coords': coords})
+    context = {'files': f}
+    return render(request, 'WellProject/index.html', context)
