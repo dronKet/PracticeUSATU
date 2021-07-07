@@ -55,6 +55,7 @@ class DrawingScene(QWidget):
         self.tools["select"] = ControllerSelect(self)
         self.tools["accidentalClick"] = ControllerAccidentalClick(self)
         self.tools["fill"] = ControllerFill(self)
+        self.tools["copy/paste"] = CopyPasteController(self)
         self.shapes_op=ShapesOperations()
 
     def showdialog(self):
@@ -91,6 +92,8 @@ class DrawingScene(QWidget):
         ui.moveAction.triggered.connect(lambda: self.change_tool("move"))
         ui.fillAction.triggered.connect(lambda: self.tools["fill"].fill(self.color))
         ui.actionPalette.triggered.connect(lambda:self.change_color(ui))
+        ui.copyAction.triggered.connect(self.tools["copy/paste"].copy)
+        ui.pasteAction.triggered.connect(self.tools["copy/paste"].paste)
         ui.actionCleanWindow.triggered.connect(self.clean_window)
         ui.undoAction.triggered.connect(self.undo_redo.undo_redo_stack.undo)
         ui.redoAction.triggered.connect(self.undo_redo.undo_redo_stack.redo)
@@ -130,6 +133,7 @@ class DrawingScene(QWidget):
                 self.generate_pdf()
             else:
                 self.main_area.save(self.file_path[0], path_list[-1])
+
     def generate_pdf(self):
         printer=QPrinter()
         printer.setOutputFileName(self.file_path[0])

@@ -15,7 +15,7 @@ class Controller:
         self.delta_pos = QPoint(0, 0)
         self.last_pos = QPoint(0, 0)
         self.first_pos = QPoint(0, 0)
-        self.shapes_op=ShapesOperations()
+        self.shapes_op = ShapesOperations()
 
     def mouse_press_handler(self, event):
         pass
@@ -27,6 +27,29 @@ class Controller:
         pass
 
 
+class CopyPasteController(Controller):
+    def __init__(self, window):
+        super().__init__(window)
+        self.copied_shapes_list = list()
+        self.is_first_paste=False
+
+    def copy(self):
+        self.copied_shapes_list = self.shapes_op.selected_shapes(self.main_window.shapes).copy()
+        closest_point = self.shapes_op.the_closest_shape_coords_to_point(self.copied_shapes_list)
+        self.shapes_op.displace_shapes(self.copied_shapes_list, -closest_point)
+        self.is_first_paste=True
+
+    def paste(self):
+        if self.copied_shapes_list:
+            self.shapes_op.remove_excretion(self.main_window.shapes)
+            if self.is_first_paste:
+                self.main_window.shapes += self.copied_shapes_list.copy()
+                self.is_first_paste=False
+            self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,
+                                                  QPainter(self.main_window.main_area))
+            print(len(self.main_window.shapes))
+
+
 class ControllerAccidentalClick(Controller):
     def check_press_figure(self, shape, pos):
         if pos.x() > shape.upper_x and pos.y() > shape.upper_y and pos.x() < shape.lower_x and pos.y() < shape.lower_y:
@@ -34,7 +57,8 @@ class ControllerAccidentalClick(Controller):
 
     def mouse_press_handler(self, event):
         self.shapes_op.remove_excretion(self.main_window.shapes)
-        self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,QPainter(self.main_window.main_area))
+        self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,
+                                              QPainter(self.main_window.main_area))
         selected_shapes = list()
         print(len(self.main_window.shapes))
         temp_shape = 0
@@ -64,7 +88,7 @@ class ControllerFill(Controller):
         painter = QPainter(self.main_window.main_area)
         self.main_window.external_area.fill(QColor(0, 0, 0, 0))
         for shape in self.main_window.shapes:
-            if shape.is_excretion:
+            if shape.is_selected:
                 shape.brush_color = color
                 # ControllerUndoRedo.undo_redo_stack.push(UndoRedoCommand())
                 shape.draw(painter)
@@ -78,13 +102,13 @@ class ControllerMove(Controller):
         painter = QPainter(self.main_window.main_area)
         self.main_window.main_area.fill(Qt.white)
         for shape in self.main_window.shapes:
-            if not shape.is_excretion:
+            if not shape.is_selected:
                 shape.draw(painter)
         self.main_window.update()
 
     def draw_shape(self, painter):
         for shape in self.main_window.shapes:
-            if shape.is_excretion:
+            if shape.is_selected:
                 shape.point = self.delta_pos
                 shape.draw(painter)
         self.main_window.update()
@@ -105,7 +129,7 @@ class ControllerMove(Controller):
         painter = QPainter(self.main_window.main_area)
         self.draw_shape(painter)
         for shape in self.main_window.shapes:
-            if shape.is_excretion:
+            if shape.is_selected:
                 shape.lower_right_point += shape.point
                 shape.upper_left_point += shape.point
                 shape.point = QPoint(0, 0)
@@ -126,8 +150,9 @@ class ControllerSelect(Controller):
     def mouse_press_handler(self, event):
         self.begin = event.pos()
         self.destination = event.pos()
-        self.shapes_op.remove_excretion( self.main_window.shapes)
-        self.shapes_op.draw_only_shapes_array(self.main_window.shapes,self.main_window,QPainter(self.main_window.main_area))
+        self.shapes_op.remove_excretion(self.main_window.shapes)
+        self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,
+                                              QPainter(self.main_window.main_area))
 
     def mouse_move_handler(self, event):
         self.destination = event.pos()
@@ -138,13 +163,14 @@ class ControllerSelect(Controller):
         self.destination = event.pos()
         if self.destination != self.begin:
             self.main_window.external_area.fill(QColor(0, 0, 0, 0))
-            selected_rectangle = [QColor(0,0,0), QColor(255,255,255), "rectangle", self.begin,
-                                 self.destination, 2]
+            selected_rectangle = [QColor(0, 0, 0), QColor(255, 255, 255), "rectangle", self.begin,
+                                  self.destination, 2]
             selected_rectangle_object = ShapeObject(selected_rectangle)
             for shape in self.main_window.shapes:
                 if shape.in_shape(selected_rectangle_object):
-                    shape.is_excretion=True
-            self.shapes_op.draw_only_shapes_array(self.main_window.shapes,self.main_window,QPainter(self.main_window.main_area))
+                    shape.is_selected = True
+            self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,
+                                                  QPainter(self.main_window.main_area))
         else:
             self.main_window.tools["accidentalClick"].mouse_press_handler(event)
 
@@ -169,8 +195,9 @@ class ControllerShape(Controller):
         self.main_window.update()
 
     def mouse_press_handler(self, event):
-        self.shapes_op.remove_excretion( self.main_window.shapes)
-        self.shapes_op.draw_only_shapes_array(self.main_window.shapes,self.main_window,QPainter(self.main_window.main_area))
+        self.shapes_op.remove_excretion(self.main_window.shapes)
+        self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,
+                                              QPainter(self.main_window.main_area))
         self.begin = event.pos()
         self.destination = event.pos()
 

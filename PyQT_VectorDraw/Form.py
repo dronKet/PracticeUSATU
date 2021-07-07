@@ -127,6 +127,24 @@ class Ui_MainWindow(object):
         self.changeSizeAction.setIcon(self.changeSizeActionIcon)
         self.changeSizeAction.setObjectName("changesizeaction")
 
+        self.copyAction = QtWidgets.QAction(MainWindow)
+        self.copyActionIcon = QtGui.QIcon()
+        #self.selectIcon.addPixmap(QtGui.QPixmap(":/ToolBar/choose.PNG"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.copyAction.setIcon(self.copyActionIcon)
+        self.copyAction.setObjectName("copyaction")
+
+        self.pasteAction = QtWidgets.QAction(MainWindow)
+        self.pasteActionIcon = QtGui.QIcon()
+        #self.selectIcon.addPixmap(QtGui.QPixmap(":/ToolBar/choose.PNG"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pasteAction.setIcon(self.pasteActionIcon)
+        self.pasteAction.setObjectName("changesizeaction")
+
+        self.changeSizeAction = QtWidgets.QAction(MainWindow)
+        self.changeSizeActionIcon = QtGui.QIcon()
+        #self.selectIcon.addPixmap(QtGui.QPixmap(":/ToolBar/choose.PNG"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.changeSizeAction.setIcon(self.changeSizeActionIcon)
+        self.changeSizeAction.setObjectName("changesizeaction")
+
 
 
         #self.menubar.addAction(self.menuFile.menuAction())
@@ -141,6 +159,8 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.redoAction)
         self.toolBar.addAction(self.fillAction)
         self.toolBar.addAction(self.changeSizeAction)
+        self.toolBar.addAction(self.copyAction)
+        self.toolBar.addAction(self.pasteAction)
 
         layout = QVBoxLayout()
         MainWindow.setLayout(layout)
@@ -161,6 +181,8 @@ class Ui_MainWindow(object):
         self.loadAction.setText(_translate("MainWindow", "Load"))
         self.saveAsAction.setText(_translate("MainWindow", "SaveAs"))
         self.changeSizeAction.setText(_translate("MainWindow", "ChangeSize"))
+        self.copyAction.setText(_translate("MainWindow", "Copy"))
+        self.pasteAction.setText(_translate("MainWindow", "Paste"))
       #  self.actionRectangle.setText(_translate("MainWindow", "Rectangle"))
        # self.actionEllips.setText(_translate("MainWindow", "Ellips"))
        # self.actionEllips.setToolTip(_translate("MainWindow", "Ellips"))
