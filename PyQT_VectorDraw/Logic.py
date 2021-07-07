@@ -4,15 +4,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtSvg import QSvgGenerator, QSvgRenderer
 from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QColorDialog, \
-    QMainWindow, QFormLayout, QGroupBox, QLabel, QScrollArea, QFileDialog, QDialog, QLineEdit
+    QMainWindow, QFormLayout, QGroupBox, QLabel, QScrollArea, QFileDialog, QDialog, QLineEdit, QSpinBox
 from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QPen, QIcon
 from PyQt5.QtCore import Qt, QPoint, QRect, QLineF, pyqtSignal, QSize
 from Form import Ui_MainWindow
-
-
-class Communicate():
-    updateWidget = pyqtSignal(int)
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -21,7 +16,7 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         self.widget = DrawingScene()
         self.widget.add_functions(self.ui)
-        #self.setCentralWidget(self.widget)
+        # self.setCentralWidget(self.widget)
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(self.widget)
@@ -56,32 +51,52 @@ class DrawingScene(QWidget):
         self.tools["accidentalClick"] = ControllerAccidentalClick(self)
         self.tools["fill"] = ControllerFill(self)
         self.tools["copy/paste"] = CopyPasteController(self)
-        self.shapes_op=ShapesOperations()
+        self.default_w=self.width()
+        self.default_h=self.height()
+        self.shapes_op = ShapesOperations()
 
     def showdialog(self):
         dlg = QDialog()
-        dlg.resize(300,200)
-        label1=QLabel("Ширина", dlg)
-        label2=QLabel("Длина", dlg)
-        label1.move(25,50)
-        label2.move(25,100)
-        line1 = QLineEdit(str(self.width()), dlg)
-        line1.move(100, 50)
-        line2 = QLineEdit(str(self.height()), dlg)
-        line2.move(100, 100)
+        dlg.resize(300, 200)
+
+        label_w = QLabel("Ширина", dlg)
+        label_h = QLabel("Длина", dlg)
+        label_w.move(25, 50)
+        label_h.move(25, 100)
+        line_w = QSpinBox(dlg)
+        line_h = QSpinBox(dlg)
+        line_w.setRange(1,5000)
+        line_h.setRange(1, 5000)
+        line_w.setValue(self.width())
+        line_h.setValue(self.height())
+        line_w.move(100, 50)
+        line_h.move(100, 100)
+        button_ok = QPushButton(dlg)
+        button_ok.setText("Применить")
+        button_ok.move(25, 150)
+
+        button_default = QPushButton(dlg)
+        button_default.setText("По умолчанию")
+        button_default.move(100, 150)
+        #button_cancel = QPushButton(dlg)
+        #button_cancel.setText("Отмена")
+        #button_cancel.move(200, 100)
+        #button_cancel.clicked.connect(dlg.reject)
+       # button_ok.clicked.connect(dlg.accept)
+        button_default.clicked.connect(lambda: self.change_scene_size(self.default_w, self.default_h))
+        button_ok.clicked.connect(lambda: self.change_scene_size(line_w.value(), line_h.value()))
         dlg.setWindowTitle("Dialog")
         dlg.setWindowModality(Qt.ApplicationModal)
         dlg.exec_()
-        self.change_scene_size(int(line1.text()),int(line2.text()))
 
-    def change_scene_size(self,width, height):
+    def change_scene_size(self, width, height):
         self.setFixedWidth(width)
         self.setFixedHeight(height)
         self.main_area = QPixmap(self.rect().size())
         self.main_area.fill(Qt.white)
         self.external_area = QPixmap(self.rect().size())
         self.external_area.fill(QColor(0, 0, 0, 0))
-        self.shapes_op.draw_only_shapes_array(self.shapes,self,QPainter(self.main_area))
+        self.shapes_op.draw_only_shapes_array(self.shapes, self, QPainter(self.main_area))
 
     def add_functions(self, ui):
         ui.actionRectangle.triggered.connect(lambda: self.change_tool("rectangle"))
@@ -91,13 +106,13 @@ class DrawingScene(QWidget):
         ui.selectAction.triggered.connect(lambda: self.change_tool("select"))
         ui.moveAction.triggered.connect(lambda: self.change_tool("move"))
         ui.fillAction.triggered.connect(lambda: self.tools["fill"].fill(self.color))
-        ui.actionPalette.triggered.connect(lambda:self.change_color(ui))
+        ui.actionPalette.triggered.connect(lambda: self.change_color(ui))
         ui.copyAction.triggered.connect(self.tools["copy/paste"].copy)
         ui.pasteAction.triggered.connect(self.tools["copy/paste"].paste)
         ui.actionCleanWindow.triggered.connect(self.clean_window)
         ui.undoAction.triggered.connect(self.undo_redo.undo_redo_stack.undo)
         ui.redoAction.triggered.connect(self.undo_redo.undo_redo_stack.redo)
-        #ui.changeSizeAction.triggered.connect(self.change_scene_size)
+        # ui.changeSizeAction.triggered.connect(self.change_scene_size)
         ui.changeSizeAction.triggered.connect(self.showdialog)
         ui.saveAction.triggered.connect(self.fileSave)
         ui.saveAsAction.triggered.connect(self.fileSaveAs)
@@ -110,8 +125,8 @@ class DrawingScene(QWidget):
         if not self.file_path == '':
             path_list = self.file_path[0].split('.')
             print(path_list[-1])
-            image=QIcon(self.file_path[0]).pixmap(QSize())
-            if path_list[-1]=='svg':
+            image = QIcon(self.file_path[0]).pixmap(QSize())
+            if path_list[-1] == 'svg':
                 renderer = QSvgRenderer(self.file_path[0])
                 print(self.file_path[0])
                 self.main_area = QPixmap(self.rect().size())
@@ -127,32 +142,32 @@ class DrawingScene(QWidget):
             self.fileSaveAs()
         else:
             path_list = self.file_path[0].split('.')
-            if path_list[-1]== 'svg':
+            if path_list[-1] == 'svg':
                 self.generate_svg()
-            elif path_list[-1]=='pdf':
+            elif path_list[-1] == 'pdf':
                 self.generate_pdf()
             else:
                 self.main_area.save(self.file_path[0], path_list[-1])
 
     def generate_pdf(self):
-        printer=QPrinter()
+        printer = QPrinter()
         printer.setOutputFileName(self.file_path[0])
         pdf_painter = QPainter(printer)
-        pdf_painter.fillRect(QRect(0, 0,self.width(), self.height()), Qt.white)
-        self.shapes_op.draw_only_shapes_array(self.shapes,self,pdf_painter)
-        #self.shapes[0].draw(svg_painter)
+        pdf_painter.fillRect(QRect(0, 0, self.width(), self.height()), Qt.white)
+        self.shapes_op.draw_only_shapes_array(self.shapes, self, pdf_painter)
+        # self.shapes[0].draw(svg_painter)
         pdf_painter.end()
+
     def generate_svg(self):
         generator = QSvgGenerator()
         generator.setFileName(self.file_path[0])
         generator.setSize(QSize(self.width(), self.height()))
-        generator.setViewBox(QRect(0, 0,self.width(), self.height()))
+        generator.setViewBox(QRect(0, 0, self.width(), self.height()))
         svg_painter = QPainter(generator)
-        svg_painter.fillRect(QRect(0, 0,self.width(), self.height()), Qt.white)
-        self.shapes_op.draw_only_shapes_array(self.shapes,self,svg_painter)
-        #self.shapes[0].draw(svg_painter)
+        svg_painter.fillRect(QRect(0, 0, self.width(), self.height()), Qt.white)
+        self.shapes_op.draw_only_shapes_array(self.shapes, self, svg_painter)
+        # self.shapes[0].draw(svg_painter)
         svg_painter.end()
-
 
     def fileSaveAs(self):
         file = QFileDialog.getSaveFileName(self, "", "untitled.svg", "*.svg;;*.pdf;;*.png;;*.jpg;;*.*")
@@ -164,7 +179,7 @@ class DrawingScene(QWidget):
     def change_tool(self, name_of_tool):
         self.current_tool = self.tools[name_of_tool]
 
-    def change_color(self,ui):
+    def change_color(self, ui):
         color = QColorDialog.getColor()
         self.color = color
         icon_pix = QPixmap(self.rect().size())
