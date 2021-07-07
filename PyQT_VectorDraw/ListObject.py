@@ -110,3 +110,10 @@ class ShapesOperations():
         for shape in shapes_array:
             shape.upper_left_point = shape.upper_left_point + point
             shape.lower_right_point = shape.lower_right_point + point
+
+    def delete_shapes_from_array(self,shapes_array):
+        temp_shapes_array=list()
+        for shape in shapes_array:
+            if not shape.is_selected:
+                temp_shapes_array.append(shape.copy())
+        return temp_shapes_array.copy()

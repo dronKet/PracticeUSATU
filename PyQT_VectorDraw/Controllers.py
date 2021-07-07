@@ -27,27 +27,26 @@ class Controller:
         pass
 
 
-class CopyPasteController(Controller):
+class ControllerCopyPaste(Controller):
     def __init__(self, window):
         super().__init__(window)
         self.copied_shapes_list = list()
-        self.is_first_paste=False
+        self.is_first_paste = False
 
     def copy(self):
         self.copied_shapes_list = self.shapes_op.selected_shapes(self.main_window.shapes).copy()
         closest_point = self.shapes_op.the_closest_shape_coords_to_point(self.copied_shapes_list)
         self.shapes_op.displace_shapes(self.copied_shapes_list, -closest_point)
-        self.is_first_paste=True
+        self.is_first_paste = True
 
     def paste(self):
         if self.copied_shapes_list:
             self.shapes_op.remove_excretion(self.main_window.shapes)
             if self.is_first_paste:
                 self.main_window.shapes += self.copied_shapes_list.copy()
-                self.is_first_paste=False
+                self.is_first_paste = False
             self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,
                                                   QPainter(self.main_window.main_area))
-            print(len(self.main_window.shapes))
 
 
 class ControllerAccidentalClick(Controller):
@@ -60,7 +59,6 @@ class ControllerAccidentalClick(Controller):
         self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,
                                               QPainter(self.main_window.main_area))
         selected_shapes = list()
-        print(len(self.main_window.shapes))
         temp_shape = 0
         for shape in self.main_window.shapes:
             if self.check_press_figure(shape, event.pos()):
@@ -78,7 +76,7 @@ class ControllerAccidentalClick(Controller):
         elif len(selected_shapes) == 1:
             temp_shape = selected_shapes[0]
         if temp_shape != 0:
-            temp_shape.is_excretion = True
+            temp_shape.is_selected = True
             temp_shape.draw(QPainter(self.main_window.main_area))
         self.main_window.update()
 
@@ -173,6 +171,20 @@ class ControllerSelect(Controller):
                                                   QPainter(self.main_window.main_area))
         else:
             self.main_window.tools["accidentalClick"].mouse_press_handler(event)
+
+
+class ControllerDelete(Controller):
+    def delete_shapes(self):
+        self.main_window.shapes = self.shapes_op.delete_shapes_from_array(self.main_window.shapes)
+        self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,
+                                              QPainter(self.main_window.main_area))
+        self.main_window.update()
+
+
+class ControllerCut(Controller):
+    def cut_shapes(self):
+        self.main_window.tools["copy/paste"].copy()
+        self.main_window.tools["delete"].delete_shapes()
 
 
 class ControllerShape(Controller):

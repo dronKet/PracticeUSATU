@@ -9,6 +9,7 @@ from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QPen, QIcon
 from PyQt5.QtCore import Qt, QPoint, QRect, QLineF, pyqtSignal, QSize
 from Form import Ui_MainWindow
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -50,7 +51,9 @@ class DrawingScene(QWidget):
         self.tools["select"] = ControllerSelect(self)
         self.tools["accidentalClick"] = ControllerAccidentalClick(self)
         self.tools["fill"] = ControllerFill(self)
-        self.tools["copy/paste"] = CopyPasteController(self)
+        self.tools["delete"] = ControllerDelete(self)
+        self.tools["copy/paste"] = ControllerCopyPaste(self)
+        self.tools["cut"] = ControllerCut(self)
         self.default_w=self.width()
         self.default_h=self.height()
         self.shapes_op = ShapesOperations()
@@ -67,8 +70,10 @@ class DrawingScene(QWidget):
         line_h = QSpinBox(dlg)
         line_w.setRange(1,5000)
         line_h.setRange(1, 5000)
-        line_w.setValue(self.width())
-        line_h.setValue(self.height())
+        #line_w.setValue(self.width())
+        line_w.setValue(self.main_area.width())
+        #line_h.setValue(self.height())
+        line_h.setValue(self.main_area.height())
         line_w.move(100, 50)
         line_h.move(100, 100)
         button_ok = QPushButton(dlg)
@@ -109,6 +114,8 @@ class DrawingScene(QWidget):
         ui.actionPalette.triggered.connect(lambda: self.change_color(ui))
         ui.copyAction.triggered.connect(self.tools["copy/paste"].copy)
         ui.pasteAction.triggered.connect(self.tools["copy/paste"].paste)
+        ui.deleteAction.triggered.connect(self.tools["delete"].delete_shapes)
+        ui.cutAction.triggered.connect(self.tools["cut"].cut_shapes)
         ui.actionCleanWindow.triggered.connect(self.clean_window)
         ui.undoAction.triggered.connect(self.undo_redo.undo_redo_stack.undo)
         ui.redoAction.triggered.connect(self.undo_redo.undo_redo_stack.redo)
