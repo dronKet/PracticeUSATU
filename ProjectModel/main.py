@@ -1,10 +1,13 @@
 import sys
 import numpy as np
 import pyqtgraph as pg
+import uuid
 from datetime import datetime
 from PyQt5.QtWidgets import *
+from PyQt5.QtSql import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+
 
 def read_file(file):
     name = ""
@@ -21,9 +24,11 @@ def read_file(file):
                 coord = np.append(coord, [[x, y, z]], axis=0)
     return name, coord
 
+
 class WellItem(QStandardItem):
     def __init__(self):
         super().__init__()
+        self.id = str(uuid.uuid4())
         self.setCheckable(True)
         self.data = None
         self.plotItem = None
@@ -43,8 +48,8 @@ class WellItem(QStandardItem):
 class WellContainerItem(QStandardItem):
     def __init__(self):
         super().__init__()
+        self.id = str(uuid.uuid4())
         self.setCheckable(False)
-
 
 
 class Window(QMainWindow):
@@ -68,6 +73,10 @@ class Window(QMainWindow):
 
         self.plotWidget = pg.PlotWidget()
         self.plotWidget.showGrid(x=True, y=True, alpha=0.5)
+
+        self.db = None
+        self.tableModel = None
+        self.tableName1 = "Folder"
 
         splitter.addWidget(self.treeView)
         splitter.addWidget(self.tableView)
@@ -100,6 +109,19 @@ class Window(QMainWindow):
             well = self.create_well(container)
             well.setText(name)
             well.set_data(coord)
+
+        self.db = QSqlDatabase.addDatabase("QSQLITE")
+        if not self.db.open():
+            QMessageBox.critical(None, qApp.tr("Cannot open database"),
+                                 qApp.tr("Unable to establish a database connection.\n"
+                                         "This example needs SQLite support. Please read "
+                                         "the Qt SQL driver documentation for information "
+                                         "how to build it.\n\n"
+                                         "Click Cancel to exit."),
+                                 QMessageBox.Cancel)
+
+        self.db.exec(f'CREATE TEMP TABLE {self.tableName1} (Id INTEGER PRIMARY KEY AUTOINCREMENT, '
+                     f'IDENTIFIER VARCHAR(40), NAME VARCHAR(40))')
 
     def delete_selected_well(self):
         well_idx = self.treeView.currentIndex()
