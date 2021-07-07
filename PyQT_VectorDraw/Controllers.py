@@ -36,6 +36,7 @@ class ControllerAccidentalClick(Controller):
         self.shapes_op.remove_excretion(self.main_window.shapes)
         self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,QPainter(self.main_window.main_area))
         selected_shapes = list()
+        print(len(self.main_window.shapes))
         temp_shape = 0
         for shape in self.main_window.shapes:
             if self.check_press_figure(shape, event.pos()):
@@ -140,7 +141,6 @@ class ControllerSelect(Controller):
             selected_rectangle = [QColor(0,0,0), QColor(255,255,255), "rectangle", self.begin,
                                  self.destination, 2]
             selected_rectangle_object = ShapeObject(selected_rectangle)
-            print(len(self.main_window.shapes))
             for shape in self.main_window.shapes:
                 if shape.in_shape(selected_rectangle_object):
                     shape.is_excretion=True

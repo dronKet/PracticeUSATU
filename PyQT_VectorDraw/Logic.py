@@ -1,10 +1,10 @@
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtSvg import QSvgGenerator
+from PyQt5.QtSvg import QSvgGenerator, QSvgRenderer
 from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QColorDialog, \
     QMainWindow, QFormLayout, QGroupBox, QLabel, QScrollArea, QFileDialog, QDialog, QLineEdit
-from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QPen
+from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QPen, QIcon
 from PyQt5.QtCore import Qt, QPoint, QRect, QLineF, pyqtSignal, QSize
 from Form import Ui_MainWindow
 
@@ -63,9 +63,9 @@ class DrawingScene(QWidget):
         label2=QLabel("Длина", dlg)
         label1.move(25,50)
         label2.move(25,100)
-        line1 = QLineEdit("800", dlg)
+        line1 = QLineEdit(str(self.width()), dlg)
         line1.move(100, 50)
-        line2 = QLineEdit("600", dlg)
+        line2 = QLineEdit(str(self.height()), dlg)
         line2.move(100, 100)
         dlg.setWindowTitle("Dialog")
         dlg.setWindowModality(Qt.ApplicationModal)
@@ -100,13 +100,23 @@ class DrawingScene(QWidget):
         ui.loadAction.triggered.connect(self.fileLoad)
 
     def fileLoad(self):
-        file = QFileDialog.getOpenFileName(self, "", "", "*.png;;*.jpg")
+        file = QFileDialog.getOpenFileName(self, "", "", "*.svg;;*.png;;*.jpg")
         self.file_path = file
 
         if not self.file_path == '':
             path_list = self.file_path[0].split('.')
             print(path_list[-1])
-            self.main_area.load(self.file_path[0], path_list[-1])
+            image=QIcon(self.file_path[0]).pixmap(QSize())
+            if path_list[-1]=='svg':
+                renderer = QSvgRenderer(self.file_path[0])
+                print(self.file_path[0])
+                self.main_area = QPixmap(self.rect().size())
+                self.main_area.fill(Qt.white);
+                painter = QPainter(self.main_area)
+                renderer.render(painter)
+                self.update()
+            else:
+                self.main_area.load(self.file_path[0], path_list[-1])
 
     def fileSave(self):
         if self.file_path == '':
