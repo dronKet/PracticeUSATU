@@ -46,6 +46,7 @@ class WellContainerItem(QStandardItem):
         self.setCheckable(False)
 
 
+
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
