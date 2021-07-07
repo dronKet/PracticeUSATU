@@ -1,31 +1,17 @@
 from PyQt5.QtCore import *
 from PyQt5.QtSql import *
 from PyQt5.QtWidgets import QMessageBox, qApp
-
-testData = [[155493.83000, 139550.56000, 55.430000000],
-            [155493.83000, 139550.56000, 45.430000000],
-            [153.43494879, 0.0640584421, 0.1921753287],
-            [155493.84000, 139550.54000, 35.430000000],
-            [155493.81000, 139550.52000, 25.430000000],
-            [155493.79000, 139550.56000, 15.430000000],
-            [155493.85000, 139550.59000, 5.4300000000]]
-
-testData2 = [[155493.0, 139550.56000, 55.430000000],
-             [155493.83000, 139550.56000, 45.430000000],
-             [153.43494879, 0.0640584421, 0.0],
-             [155493.84000, 139550.54000, 35.430000000],
-             [155493.81000, 139550.52000, 25.430000000],
-             [0, 139550.56000, 15.430000000],
-             [155493.85000, 139550.59000, 5.4300000000]]
+import numpy as np
 
 
-class Model(QObject):
+def genData():
+    data = np.random.rand(5, 3)
+    return data
+
+
+class Model(QSqlTableModel):
     def __init__(self, parent=None):
-        super().__init__(parent)
         self.tableName = "trajectory"
-        self.dataBaseName = ":memory:"
-        self.connectionName = "TRAJECTORY"
-        self.driver = "QSQLITE"
 
         self.db = QSqlDatabase.addDatabase("QSQLITE")
         if not self.db.open():
@@ -37,36 +23,55 @@ class Model(QObject):
                                          "Click Cancel to exit."),
                                  QMessageBox.Cancel)
 
-        self.db.exec(f'CREATE TEMP TABLE {self.tableName} (Id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                      f'X REAL, Y REAL, Z REAL)')
+        self.db.exec(f'CREATE TABLE {self.tableName} (IdWell VARCHAR(40), '
+                     f'X REAL, Y REAL, Z REAL)')
 
-        self.tableModel = QSqlTableModel(None, self.db)
-        self.tableModel.setTable(self.tableName)
-        self.tableModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.tableModel.select()
+        super().__init__(parent, self.db)
 
-        self.TableModel.setHeaderData(0, Qt.Orientation.Horizontal, "Id")
-        self.TableModel.setHeaderData(1, Qt.Orientation.Horizontal, "X")
-        self.TableModel.setHeaderData(2, Qt.Orientation.Horizontal, "Y")
-        self.TableModel.setHeaderData(3, Qt.Orientation.Horizontal, "Z")
+        self.setTable(self.tableName)
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.select()
 
-        self.xMin = float('inf')
-        self.yMin = float('inf')
-        self.zMin = float('inf')
-        self.xMax = float('-inf')
-        self.yMax = float('-inf')
-        self.zMax = float('-inf')
+        self.dataChanged.connect(self.on_dataChanged)
 
-    def FillData(self, data):
+        self.min = [float('inf'), float('inf'), float('inf')]
+        self.max = [float('-inf'), float('-inf'), float('-inf')]
+
+        # self.setHeaderData(0, Qt.Orientation.Horizontal, "Id")
+        # self.setHeaderData(1, Qt.Orientation.Horizontal, "X")
+        # self.setHeaderData(2, Qt.Orientation.Horizontal, "Y")
+        # self.setHeaderData(3, Qt.Orientation.Horizontal, "Z")
+
+    def minMax(self):
+        return self.min, self.max
+
+    def FillData(self, data, idWell):
+        self.min = [float('inf'), float('inf'), float('inf')]
+        self.max = [float('-inf'), float('-inf'), float('-inf')]
         for X, Y, Z in data:
             record = QSqlRecord()
+            record.append(QSqlField("IdWell"))
             record.append(QSqlField("X"))
             record.append(QSqlField("Y"))
             record.append(QSqlField("Z"))
-            record.setValue("X", X)
-            record.setValue("Y", Y)
-            record.setValue("Z", Z)
+            record.setValue("IdWell", idWell)
+            record.setValue("X", float(X))
+            record.setValue("Y", float(Y))
+            record.setValue("Z", float(Z))
+            self.insertRecord(-1, record)
 
-    @property
-    def TableModel(self):
-        return self.tableModel
+            self.min = [min(self.min[0], X), min(self.min[1], Y), min(self.min[2], Z)]
+            self.max = [max(self.max[0], X), max(self.max[1], Y), max(self.max[2], Z)]
+
+        self.submitAll()
+        self.setFilter(f'IdWell="{idWell}"')
+
+    def on_dataChanged(self, topLeft, bottomRight, roles):
+        if topLeft.column() != 0:
+            column = topLeft.column() - 1
+            self.min[column] = float('inf')
+            self.max[column] = float('-inf')
+            for row in range(self.rowCount()):
+                data = float(self.index(row, column + 1).data())
+                self.min[column] = min(data, self.min[column])
+                self.max[column] = max(data, self.max[column])
