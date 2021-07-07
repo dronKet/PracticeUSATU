@@ -1,6 +1,7 @@
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtSvg import QSvgGenerator, QSvgRenderer
 from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, QHBoxLayout, QPushButton, QColorDialog, \
     QMainWindow, QFormLayout, QGroupBox, QLabel, QScrollArea, QFileDialog, QDialog, QLineEdit
@@ -100,7 +101,7 @@ class DrawingScene(QWidget):
         ui.loadAction.triggered.connect(self.fileLoad)
 
     def fileLoad(self):
-        file = QFileDialog.getOpenFileName(self, "", "", "*.svg;;*.png;;*.jpg")
+        file = QFileDialog.getOpenFileName(self, "", "", "*.svg;;*.pdf;;*.png;;*.jpg")
         self.file_path = file
 
         if not self.file_path == '':
@@ -125,9 +126,18 @@ class DrawingScene(QWidget):
             path_list = self.file_path[0].split('.')
             if path_list[-1]== 'svg':
                 self.generate_svg()
+            elif path_list[-1]=='pdf':
+                self.generate_pdf()
             else:
                 self.main_area.save(self.file_path[0], path_list[-1])
-
+    def generate_pdf(self):
+        printer=QPrinter()
+        printer.setOutputFileName(self.file_path[0])
+        pdf_painter = QPainter(printer)
+        pdf_painter.fillRect(QRect(0, 0,self.width(), self.height()), Qt.white)
+        self.shapes_op.draw_only_shapes_array(self.shapes,self,pdf_painter)
+        #self.shapes[0].draw(svg_painter)
+        pdf_painter.end()
     def generate_svg(self):
         generator = QSvgGenerator()
         generator.setFileName(self.file_path[0])
@@ -141,7 +151,7 @@ class DrawingScene(QWidget):
 
 
     def fileSaveAs(self):
-        file = QFileDialog.getSaveFileName(self, "", "untitled.svg", "*.png;;*.jpg;;*.svg;;*.*")
+        file = QFileDialog.getSaveFileName(self, "", "untitled.svg", "*.svg;;*.pdf;;*.png;;*.jpg;;*.*")
         # print(QtGui.QImageWriter.supportedImageFormats())
         if not file == '':
             self.file_path = file
