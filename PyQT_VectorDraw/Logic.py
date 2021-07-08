@@ -8,20 +8,24 @@ from PyQt5.QtWidgets import QOpenGLWidget, QWidget, QApplication, QVBoxLayout, Q
 from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QPen, QIcon
 from PyQt5.QtCore import Qt, QPoint, QRect, QLineF, pyqtSignal, QSize
 from Form import Ui_MainWindow
+from Controllers import *
 
 
-class MainWindow(QMainWindow):
+class VectorEditorWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.widget = DrawingScene()
+        self.main_area=self.widget.main_area
+        self.rect_size=self.widget.rect().size()
         self.widget.add_functions(self.ui)
         # self.setCentralWidget(self.widget)
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(self.widget)
         self.setCentralWidget(scroll)
+        self.setStatusBar(None)
 
 
 class DrawingScene(QWidget):
@@ -38,6 +42,7 @@ class DrawingScene(QWidget):
         self.excretion_coords = False
         self.main_area = QPixmap(self.rect().size())
         self.main_area.fill(Qt.white)
+        self.painter=QPainter(self.main_area)
         self.external_area = QPixmap(self.rect().size())
         self.external_area.fill(QColor(0, 0, 0, 0))
         self.begin = QPoint()
@@ -90,7 +95,7 @@ class DrawingScene(QWidget):
        # button_ok.clicked.connect(dlg.accept)
         button_default.clicked.connect(lambda: self.change_scene_size(self.default_w, self.default_h))
         button_ok.clicked.connect(lambda: self.change_scene_size(line_w.value(), line_h.value()))
-        dlg.setWindowTitle("Dialog")
+        dlg.setWindowTitle("Смена размера сцена")
         dlg.setWindowModality(Qt.ApplicationModal)
         dlg.exec_()
 
@@ -223,6 +228,6 @@ if __name__ == "__main__":
     import sys
 
     app = QApplication([])
-    window = MainWindow()
+    window = VectorEditorWindow()
     window.show()
     app.exec()
