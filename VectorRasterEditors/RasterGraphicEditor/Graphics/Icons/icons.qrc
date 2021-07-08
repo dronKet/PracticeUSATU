@@ -1,0 +1,21 @@
+<RCC>
+  <qresource prefix="tool_bar">
+    <file>tool_save_as.png</file>
+    <file>tool_save.png</file>
+    <file>tool_open.png</file>
+    <file>tool_change_size.png</file>
+    <file>tool_delete.png</file>
+    <file>tool_cut.png</file>
+    <file>tool_copy.png</file>
+    <file>tool_paste.png</file>
+    <file>tool_undo.png</file>
+    <file>tool_redo.png</file>
+    <file>tool_select.png</file>
+    <file>tool_fill.png</file>
+    <file>tool_point.png</file>
+    <file>tool_line.png</file>
+    <file>tool_rectangle.png</file>
+    <file>tool_collor.png</file>
+    <file>tool_ellipse.png</file>
+  </qresource>
+</RCC>

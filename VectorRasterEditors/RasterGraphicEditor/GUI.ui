@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionFileOpen"/>
+   <addaction name="actionFileSave"/>
+   <addaction name="actionFileSaveAs"/>
+   <addaction name="actionChangeSize"/>
+   <addaction name="separator"/>
+   <addaction name="actionSelect"/>
+   <addaction name="actionCopy"/>
+   <addaction name="actionPaste"/>
+   <addaction name="actionCut"/>
+   <addaction name="separator"/>
+   <addaction name="actionUndo"/>
+   <addaction name="actionRedo"/>
+   <addaction name="separator"/>
+   <addaction name="actionRectangle"/>
+   <addaction name="actionEllipse"/>
+   <addaction name="actionLine"/>
+   <addaction name="actionPoint"/>
+   <addaction name="actionFill"/>
+   <addaction name="actionDelete"/>
+   <addaction name="actionChangeColor"/>
+  </widget>
+  <action name="actionRectangle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_rectangle.png</normaloff>
+     <normalon>:/tool_bar/tool_rectangle.png</normalon>
+     <disabledoff>:/tool_bar/tool_rectangle.png</disabledoff>
+     <disabledon>:/tool_bar/tool_rectangle.png</disabledon>
+     <activeoff>:/tool_bar/tool_rectangle.png</activeoff>
+     <activeon>:/tool_bar/tool_rectangle.png</activeon>
+     <selectedoff>:/tool_bar/tool_rectangle.png</selectedoff>
+     <selectedon>:/tool_bar/tool_rectangle.png</selectedon>:/tool_bar/tool_rectangle.png</iconset>
+   </property>
+   <property name="text">
+    <string>Rectangle</string>
+   </property>
+   <property name="toolTip">
+    <string>Рисует прямоугольник</string>
+   </property>
+  </action>
+  <action name="actionEllipse">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_ellipse.png</normaloff>:/tool_bar/tool_ellipse.png</iconset>
+   </property>
+   <property name="text">
+    <string>Ellipse</string>
+   </property>
+   <property name="toolTip">
+    <string>Рисует эллипс</string>
+   </property>
+  </action>
+  <action name="actionChangeColor">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_collor.png</normaloff>:/tool_bar/tool_collor.png</iconset>
+   </property>
+   <property name="text">
+    <string>ChangeColor</string>
+   </property>
+   <property name="toolTip">
+    <string>Нажмите сюда для выбора цвета</string>
+   </property>
+  </action>
+  <action name="actionLine">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_line.png</normaloff>:/tool_bar/tool_line.png</iconset>
+   </property>
+   <property name="text">
+    <string>Line</string>
+   </property>
+   <property name="toolTip">
+    <string>Рисует линию</string>
+   </property>
+  </action>
+  <action name="actionPoint">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_point.png</normaloff>:/tool_bar/tool_point.png</iconset>
+   </property>
+   <property name="text">
+    <string>Point</string>
+   </property>
+   <property name="toolTip">
+    <string>Карандаш</string>
+   </property>
+  </action>
+  <action name="actionFill">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_fill.png</normaloff>:/tool_bar/tool_fill.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fill</string>
+   </property>
+   <property name="toolTip">
+    <string>Заливка</string>
+   </property>
+  </action>
+  <action name="actionSelect">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_select.png</normaloff>:/tool_bar/tool_select.png</iconset>
+   </property>
+   <property name="text">
+    <string>Select</string>
+   </property>
+   <property name="toolTip">
+    <string>Выделение</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_copy.png</normaloff>:/tool_bar/tool_copy.png</iconset>
+   </property>
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="toolTip">
+    <string>Копирует выделенный участок в буфер обмена</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_paste.png</normaloff>:/tool_bar/tool_paste.png</iconset>
+   </property>
+   <property name="text">
+    <string>Paste</string>
+   </property>
+   <property name="toolTip">
+    <string>Вставляет изображение из буфера обмена</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_undo.png</normaloff>:/tool_bar/tool_undo.png</iconset>
+   </property>
+   <property name="text">
+    <string>Undo</string>
+   </property>
+   <property name="toolTip">
+    <string>Отменяет дествие</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_redo.png</normaloff>:/tool_bar/tool_redo.png</iconset>
+   </property>
+   <property name="text">
+    <string>Redo</string>
+   </property>
+   <property name="toolTip">
+    <string>Отменяет отмену дествия</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_delete.png</normaloff>:/tool_bar/tool_delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>Стирает нарисованные пиксели</string>
+   </property>
+  </action>
+  <action name="actionCut">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_cut.png</normaloff>:/tool_bar/tool_cut.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cut</string>
+   </property>
+   <property name="toolTip">
+    <string>Вырезает выбранный участок</string>
+   </property>
+  </action>
+  <action name="actionChangeSize">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_change_size.png</normaloff>:/tool_bar/tool_change_size.png</iconset>
+   </property>
+   <property name="text">
+    <string>ChangeSize</string>
+   </property>
+   <property name="toolTip">
+    <string>Изменяет размер изображения</string>
+   </property>
+  </action>
+  <action name="actionFileOpen">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_open.png</normaloff>:/tool_bar/tool_open.png</iconset>
+   </property>
+   <property name="text">
+    <string>FileOpen</string>
+   </property>
+   <property name="toolTip">
+    <string>Открывает изображение для редактирования</string>
+   </property>
+  </action>
+  <action name="actionFileSave">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_save.png</normaloff>:/tool_bar/tool_save.png</iconset>
+   </property>
+   <property name="text">
+    <string>FileSave</string>
+   </property>
+   <property name="toolTip">
+    <string>Сохраняет изображение</string>
+   </property>
+  </action>
+  <action name="actionFileSaveAs">
+   <property name="icon">
+    <iconset resource="Graphics/Icons/icons.qrc">
+     <normaloff>:/tool_bar/tool_save_as.png</normaloff>:/tool_bar/tool_save_as.png</iconset>
+   </property>
+   <property name="text">
+    <string>FileSaveAs</string>
+   </property>
+   <property name="toolTip">
+    <string>Сохраняет изображение в указанную папку</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="Graphics/Icons/icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>
