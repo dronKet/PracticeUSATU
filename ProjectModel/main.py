@@ -44,12 +44,18 @@ class WellItem(QStandardItem):
     def get_data(self):
         return self.data
 
+    def get_id(self):
+        return self.id
+
 
 class WellContainerItem(QStandardItem):
     def __init__(self):
         super().__init__()
         self.id = str(uuid.uuid4())
         self.setCheckable(False)
+
+    def get_id(self):
+        return self.id
 
 
 class Window(QMainWindow):
@@ -62,21 +68,23 @@ class Window(QMainWindow):
 
         self.treeView = QTreeView(self)
         self.treeView.setHeaderHidden(True)
-        self.treeModel = None
-
         self.deleteWell = QAction("Удалить")
         self.deleteWell.triggered.connect(self.delete_selected_well)
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.show_context_menu)
+        self.treeModel = None
 
+        self.db = None
         self.tableView = QTableView(self)
+        self.folderModel = None
+        self.folderTableName = "Folders"
+        self.wellModel = None
+        self.wellTableName = "Wells"
+        self.trajectoriesModel = None
+        self.trajectoriesTableName = "Trajectories"
 
         self.plotWidget = pg.PlotWidget()
         self.plotWidget.showGrid(x=True, y=True, alpha=0.5)
-
-        self.db = None
-        self.tableModel = None
-        self.tableName1 = "Folder"
 
         splitter.addWidget(self.treeView)
         splitter.addWidget(self.tableView)
@@ -90,15 +98,55 @@ class Window(QMainWindow):
         self.projectPath = None
 
     def create_project_file(self):
-        self.projectPath, tmp = QFileDialog.getSaveFileName(None, "Выберите местоположение файла и назовите его")
-        self.create_new_project()
+        self.projectPath, tmp = QFileDialog.getSaveFileName(None, "Создайте проект")
+        open(self.projectPath, mode='w').close()
+        self.load_database()
 
     def load_project_file(self):
-        self.projectPath, tmp = QFileDialog.getOpenFileName(None, "Выберите проект")
-        self.create_new_project()
+        self.projectPath, tmp = QFileDialog.getOpenFileName(None, "Откройте проект")
+        self.load_database()
+
+    def load_database(self):
+        if self.projectPath:
+            self.db = QSqlDatabase.addDatabase("QSQLITE")
+            self.db.setDatabaseName(self.projectPath)
+            if not self.db.open():
+                QMessageBox.critical(None, qApp.tr("Cannot open database"),
+                                     qApp.tr("Unable to establish a database connection.\n"
+                                             "This example needs SQLite support. Please read "
+                                             "the Qt SQL driver documentation for information "
+                                             "how to build it.\n\n"
+                                             "Click Cancel to exit."),
+                                     QMessageBox.Cancel)
+
+            self.db.exec(f'CREATE TABLE {self.folderTableName}(IdFolder VARCHAR(40), '
+                         f'Name VARCHAR(40))')
+            self.db.exec(f'CREATE TABLE {self.wellTableName}(IdFolder VARCHAR(40), '
+                         f'IdWell VARCHAR(40), Name VARCHAR(40))')
+            self.db.exec(f'CREATE TABLE {self.trajectoriesTableName}(IdWell VARCHAR(40), '
+                         f'X REAL, Y REAL, Z REAL)')
+
+            self.folderModel = QSqlTableModel(None, self.db)
+            self.folderModel.setTable(self.folderTableName)
+            self.folderModel.setEditStrategy(QSqlTableModel.OnFieldChange)
+            self.folderModel.select()
+
+            self.wellModel = QSqlTableModel(None, self.db)
+            self.wellModel.setTable(self.wellTableName)
+            self.wellModel.setEditStrategy(QSqlTableModel.OnFieldChange)
+            self.wellModel.select()
+
+            self.trajectoriesModel = QSqlTableModel(None, self.db)
+            self.trajectoriesModel.setTable(self.trajectoriesTableName)
+            self.trajectoriesModel.setEditStrategy(QSqlTableModel.OnFieldChange)
+            self.trajectoriesModel.select()
+
+            self.treeModel = QStandardItemModel()
+            self.treeModel.dataChanged.connect(self.on_data_changed)
+            self.treeView.setModel(self.treeModel)
 
     def load_new_wells(self):
-        files, tmp = QFileDialog.getOpenFileNames(None, "Выберите файлы:")
+        files, tmp = QFileDialog.getOpenFileNames(None, "Выберите файлы")
 
         if not files:
             return
@@ -106,35 +154,74 @@ class Window(QMainWindow):
         container = self.create_container(str(datetime.today()))
         for file in files:
             name, coord = read_file(file)
-            well = self.create_well(container)
-            well.setText(name)
-            well.set_data(coord)
+            self.create_well(container, name, coord)
 
-        self.db = QSqlDatabase.addDatabase("QSQLITE")
-        if not self.db.open():
-            QMessageBox.critical(None, qApp.tr("Cannot open database"),
-                                 qApp.tr("Unable to establish a database connection.\n"
-                                         "This example needs SQLite support. Please read "
-                                         "the Qt SQL driver documentation for information "
-                                         "how to build it.\n\n"
-                                         "Click Cancel to exit."),
-                                 QMessageBox.Cancel)
+    def create_container(self, name):
+        container = WellContainerItem()
+        container.setText(name)
+        self.treeModel.appendRow(container)
 
-        self.db.exec(f'CREATE TEMP TABLE {self.tableName1} (Id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                     f'IDENTIFIER VARCHAR(40), NAME VARCHAR(40))')
+        record = QSqlRecord()
+        record.append(QSqlField("IdFolder"))
+        record.append(QSqlField("Name"))
+        record.setValue("IdFolder", container.get_id())
+        record.setValue("Name", container.text())
+        self.folderModel.insertRecord(-1, record)
+
+        return container
+
+    def create_well(self, container_item, name, coord):
+        well = WellItem()
+        well.setText(name)
+        well.set_data(coord)
+        container_item.appendRow(well)
+
+        record = QSqlRecord()
+        record.append(QSqlField("IdFolder"))
+        record.append(QSqlField("IdWell"))
+        record.append(QSqlField("Name"))
+        record.setValue("IdFolder", container_item.get_id())
+        record.setValue("IdWell", well.get_id())
+        record.setValue("Name", well.text())
+        self.wellModel.insertRecord(-1, record)
+
+        for X, Y, Z in well.get_data():
+            record = QSqlRecord()
+            record.append(QSqlField("IdWell"))
+            record.append(QSqlField("X"))
+            record.append(QSqlField("Y"))
+            record.append(QSqlField("Z"))
+            record.setValue("IdWell", well.get_id())
+            record.setValue("X", X)
+            record.setValue("Y", Y)
+            record.setValue("Z", Z)
+            self.trajectoriesModel.insertRecord(-1, record)
+
+        return well
+
+    def show_context_menu(self, position):
+        _contextMenu = QMenu()
+        _contextMenu.addAction(self.deleteWell)
+        self.deleteWell.setEnabled(False)
+        idx = self.treeView.currentIndex()
+
+        if not idx.isValid():
+            return
+
+        if idx.parent().isValid():
+            self.deleteWell.setEnabled(True)
+        _contextMenu.exec_(self.treeView.viewport().mapToGlobal(position))
 
     def delete_selected_well(self):
         well_idx = self.treeView.currentIndex()
         well = self.treeModel.itemFromIndex(well_idx)
+        well_id = well.get_id()
         self.plotWidget.removeItem(well.plotItem)
         self.plotWidget.removeItem(well.textItem)
         well.parent().removeRow(well.row())
 
-    def create_new_project(self):
-        if self.projectPath:
-            self.treeModel = QStandardItemModel()
-            self.treeModel.dataChanged.connect(self.on_data_changed)
-            self.treeView.setModel(self.treeModel)
+        id_list = self.wellModel.match(self.wellModel.index(0, 1), Qt.EditRole, well_id)
+        self.wellModel.removeRow(id_list[0].row())
 
     def on_data_changed(self, top_left, bottom_right, roles):
         if Qt.CheckStateRole in roles:
@@ -153,30 +240,6 @@ class Window(QMainWindow):
                     self.plotWidget.removeItem(item.plotItem)
                     self.plotWidget.removeItem(item.textItem)
                     item.set_plot_item(None, None)
-
-    def create_container(self, name):
-        container = WellContainerItem()
-        container.setText(name)
-        self.treeModel.appendRow(container)
-        return container
-
-    def create_well(self, container_item):
-        well = WellItem()
-        container_item.appendRow(well)
-        return well
-
-    def show_context_menu(self, position):
-        _contextMenu = QMenu()
-        _contextMenu.addAction(self.deleteWell)
-        self.deleteWell.setEnabled(False)
-        idx = self.treeView.currentIndex()
-        # Проверка на действительность индекса
-        if not idx.isValid():
-            return
-        # Проверка на действительность индекса родителя
-        if idx.parent().isValid():
-            self.deleteWell.setEnabled(True)
-        _contextMenu.exec_(self.treeView.viewport().mapToGlobal(position))
 
 
 if __name__ == '__main__':
