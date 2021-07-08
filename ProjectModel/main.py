@@ -28,7 +28,7 @@ def read_file(file):
 class WellItem(QStandardItem):
     def __init__(self):
         super().__init__()
-        self.id = str(uuid.uuid4())
+        self.id = None
         self.setCheckable(True)
         self.data = None
         self.plotItem = None
@@ -41,6 +41,9 @@ class WellItem(QStandardItem):
         self.plotItem = plot_item
         self.textItem = text_item
 
+    def set_id(self, id):
+        self.id = id
+
     def get_data(self):
         return self.data
 
@@ -51,8 +54,11 @@ class WellItem(QStandardItem):
 class WellContainerItem(QStandardItem):
     def __init__(self):
         super().__init__()
-        self.id = str(uuid.uuid4())
+        self.id = None
         self.setCheckable(False)
+
+    def set_id(self, id):
+        self.id = id
 
     def get_id(self):
         return self.id
@@ -99,14 +105,36 @@ class Window(QMainWindow):
 
     def create_project_file(self):
         self.projectPath, tmp = QFileDialog.getSaveFileName(None, "Создайте проект")
+        if not self.projectPath:
+            return
+
         open(self.projectPath, mode='w').close()
-        self.load_database()
+        self.connect_database()
+        self.db.exec(f'CREATE TABLE {self.folderTableName}(IdFolder VARCHAR(40), '
+                     f'Name VARCHAR(40))')
+        self.db.exec(f'CREATE TABLE {self.wellTableName}(IdFolder VARCHAR(40), '
+                     f'IdWell VARCHAR(40), Name VARCHAR(40))')
+        self.db.exec(f'CREATE TABLE {self.trajectoriesTableName}(IdWell VARCHAR(40), '
+                     f'X REAL, Y REAL, Z REAL)')
+        self.create_table_model()
 
     def load_project_file(self):
         self.projectPath, tmp = QFileDialog.getOpenFileName(None, "Откройте проект")
-        self.load_database()
+        if not self.projectPath:
+            return
 
-    def load_database(self):
+        self.connect_database()
+        self.create_table_model()
+        self.load_table_models_from_db()
+
+    def load_table_models_from_db(self):
+        row_count = self.folderModel.rowCount()
+        for i in range(row_count):
+            folder_id = self.folderModel.index(i, 0).data(Qt.EditRole)
+            folder_name = self.folderModel.index(i, 1).data(Qt.EditRole)
+            self.create_model_container(name=folder_name, id=folder_id)
+
+    def connect_database(self):
         if self.projectPath:
             self.db = QSqlDatabase.addDatabase("QSQLITE")
             self.db.setDatabaseName(self.projectPath)
@@ -119,31 +147,25 @@ class Window(QMainWindow):
                                              "Click Cancel to exit."),
                                      QMessageBox.Cancel)
 
-            self.db.exec(f'CREATE TABLE {self.folderTableName}(IdFolder VARCHAR(40), '
-                         f'Name VARCHAR(40))')
-            self.db.exec(f'CREATE TABLE {self.wellTableName}(IdFolder VARCHAR(40), '
-                         f'IdWell VARCHAR(40), Name VARCHAR(40))')
-            self.db.exec(f'CREATE TABLE {self.trajectoriesTableName}(IdWell VARCHAR(40), '
-                         f'X REAL, Y REAL, Z REAL)')
+    def create_table_model(self):
+        self.folderModel = QSqlTableModel(None, self.db)
+        self.folderModel.setTable(self.folderTableName)
+        self.folderModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.folderModel.select()
 
-            self.folderModel = QSqlTableModel(None, self.db)
-            self.folderModel.setTable(self.folderTableName)
-            self.folderModel.setEditStrategy(QSqlTableModel.OnFieldChange)
-            self.folderModel.select()
+        self.wellModel = QSqlTableModel(None, self.db)
+        self.wellModel.setTable(self.wellTableName)
+        self.wellModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.wellModel.select()
 
-            self.wellModel = QSqlTableModel(None, self.db)
-            self.wellModel.setTable(self.wellTableName)
-            self.wellModel.setEditStrategy(QSqlTableModel.OnFieldChange)
-            self.wellModel.select()
+        self.trajectoriesModel = QSqlTableModel(None, self.db)
+        self.trajectoriesModel.setTable(self.trajectoriesTableName)
+        self.trajectoriesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.trajectoriesModel.select()
 
-            self.trajectoriesModel = QSqlTableModel(None, self.db)
-            self.trajectoriesModel.setTable(self.trajectoriesTableName)
-            self.trajectoriesModel.setEditStrategy(QSqlTableModel.OnFieldChange)
-            self.trajectoriesModel.select()
-
-            self.treeModel = QStandardItemModel()
-            self.treeModel.dataChanged.connect(self.on_data_changed)
-            self.treeView.setModel(self.treeModel)
+        self.treeModel = QStandardItemModel()
+        self.treeModel.dataChanged.connect(self.on_data_changed)
+        self.treeView.setModel(self.treeModel)
 
     def load_new_wells(self):
         files, tmp = QFileDialog.getOpenFileNames(None, "Выберите файлы")
@@ -151,24 +173,34 @@ class Window(QMainWindow):
         if not files:
             return
 
-        container = self.create_container(str(datetime.today()))
+        self.treeView.setUpdatesEnabled(False)
+        container_name = str(datetime.today())
+        container_id = str(uuid.uuid4())
+        container = self.create_model_container(container_name, container_id)
+        self.create_db_container(container_name, container_id)
         for file in files:
             name, coord = read_file(file)
             self.create_well(container, name, coord)
+        self.folderModel.submitAll()
+        self.wellModel.submitAll()
+        self.trajectoriesModel.submitAll()
+        self.treeView.setUpdatesEnabled(True)
 
-    def create_container(self, name):
+    def create_model_container(self, name, id):
         container = WellContainerItem()
         container.setText(name)
+        container.set_id(id)
         self.treeModel.appendRow(container)
 
+        return container
+
+    def create_db_container(self, name, id):
         record = QSqlRecord()
         record.append(QSqlField("IdFolder"))
         record.append(QSqlField("Name"))
-        record.setValue("IdFolder", container.get_id())
-        record.setValue("Name", container.text())
+        record.setValue("IdFolder", id)
+        record.setValue("Name", name)
         self.folderModel.insertRecord(-1, record)
-
-        return container
 
     def create_well(self, container_item, name, coord):
         well = WellItem()
