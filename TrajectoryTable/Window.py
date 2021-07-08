@@ -4,20 +4,22 @@ from Model import *
 from Delegate import *
 
 
-class Window(QWidget):
+class TableTrajectory(QWidget):
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        super().__init__(parent)
 
         self.model = Model(self)
-        self.model.FillData(genData(), 'well1')
-        self.model.FillData(genData(), 'wells')
-        self.model.FillData(genData(), 'well1')
+        self.model.setWellTrajectory(genData(), 'well1')
+        self.model.setWellTrajectory(genData(), 'well2')
+        self.model.setWellTrajectory(genData(), 'well3')
+        self.model.setWellTrajectory(genData(), 'well4')
 
         self.view = QTableView(self)
         self.view.setModel(self.model)
         self.view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.delegate = TableDelegate(self.view)
         self.view.setItemDelegate(self.delegate)
+        self.view.hideColumn(0)
 
         self.firstColorButton = QPushButton(self)
         self.firstColorButton.setStyleSheet('QPushButton {background-color: ' + QColor('blue').name() +
