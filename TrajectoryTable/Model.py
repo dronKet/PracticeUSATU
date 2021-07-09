@@ -10,27 +10,8 @@ def genData():
 
 
 class Model(QSqlTableModel):
-    def __init__(self, parent=None):
-        self.tableName = "trajectory"
-
-        self.db = QSqlDatabase.addDatabase("QSQLITE")
-        if not self.db.open():
-            QMessageBox.critical(None, qApp.tr("Cannot open database"),
-                                 qApp.tr("Unable to establish a database connection.\n"
-                                         "This example needs SQLite support. Please read "
-                                         "the Qt SQL driver documentation for information "
-                                         "how to build it.\n\n"
-                                         "Click Cancel to exit."),
-                                 QMessageBox.Cancel)
-
-        self.db.exec(f'CREATE TABLE {self.tableName} (IdWell VARCHAR(40), '
-                     f'X REAL, Y REAL, Z REAL)')
-
-        super().__init__(parent, self.db)
-
-        self.setTable(self.tableName)
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.select()
+    def __init__(self, db, parent=None):
+        super().__init__(parent, db)
 
         self.dataChanged.connect(self.on_dataChanged)
 
