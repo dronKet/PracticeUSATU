@@ -17,35 +17,48 @@
                     .append("g")
                       .attr("transform",
                             "translate(" + margin.left + "," + margin.top + ")")
-                    .on('mousemove', function(event) {
-                        let coords = d3.mouse(this);
-                        console.log( coords[0], coords[1] ) // log the mouse x,y position
-                    });
 
-    // Add X axis
+    // Add X axis 152000 156000
     var nx = d3.scaleLinear()
               .domain([152000, 156000])
               .range([0, width])
 
+    var nxx = d3.scaleLinear()
+              .domain([0, width])
+              .range([152000, 156000])
+
+
     var nxAxis = newSvg.append("g")
                        .attr("transform", 'translate(0, ' + (height) + ')')
-                       .call(d3.axisBottom().scale(nx).tickSize([-height]))
-                       .selectAll('text')
-                         .attr('transform', 'translate(0, -15)')
-
+                       .call(d3.axisBottom(nx).tickSize([-height]))
 
     // add Y axis
     var ny = d3.scaleLinear()
               .domain([136000, 143000])
               .range([height, 0])
 
+    var nyy = d3.scaleLinear()
+              .domain([height, 0])
+              .range([136000, 143000])
+
     var nyAxis = newSvg.append('g')
                    .call(d3.axisLeft(ny).tickSize([-width]))
-                   .selectAll('text')
-                         .attr('transform', 'translate(43, 0)')
 
+    var statusBar = newSvg.append("g")
+        .classed("status-bar", true)
+        .attr("transform", `translate(${ width / 2 }, -20)`)
 
+    statusBar.append("text")
+        .classed("mouse-position", true)
+        .attr("x", '6')
+        .attr("y", '6')
+        .attr("opacity", "0.30")
+        .style("font-family", "sans-serif")
+        .style("font-size", '24px')
+        .text(getMousePosition([0, 0]));
 
+    newSvg.on('mousemove', mouseAction())
+          .on('mouseover', mouseAction())
     // curveLinear, curveCardinal
     var nline = d3.line()
                   .curve(d3.curveLinear)
@@ -152,6 +165,7 @@
                     .attr('x', x => nnewX(+x.coordinates[x.coordinates.length - 1].x) + 1)
                     .attr('y', y => nnewY(+y.coordinates[y.coordinates.length - 1].y) + 1)
           }
+
         d3.select('.first')
         .select('ul').remove()
 
@@ -236,4 +250,27 @@
             return table
         }
       })
+
+    function getMousePosition(mouse) {
+        return `(${Math.floor(nxx(mouse[0]))}, ${Math.floor(nyy(mouse[1]))})`;
+    }
+
+    function mouseAction() {
+        return function () {
+            updateMousePosition(d3.event.target);
+        };
+    }
+
+    function updateMousePosition(target) {
+        let mouse = d3.mouse(target);
+        d3.select("text.mouse-position")
+            .interrupt()
+            .attr("fill", "rgb(52, 104, 221)")
+            .attr("opacity", "1.00")
+            .text(getMousePosition(mouse))
+            .transition()
+            .duration(2000)
+            .attr("fill", "rgb(32, 32, 32)")
+            .attr("opacity", "0.30");
+    }
 })();
