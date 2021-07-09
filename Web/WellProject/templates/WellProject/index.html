@@ -8,36 +8,19 @@
     {% include "WellProject/_nav.html" %}
     <div class="main">
         <div class="buttons">
-            <h3>Operations</h3>
+            <h3>Folders</h3>
             <div class="content-center">
-                <div class="buttons-container">
-                    <form action="" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column;">
-                        {% csrf_token %}
-                        <div class="mb-3 ddd">
-                            <label for="formFileMultiple" class="form-label btn-click-upload" name="upload-files"
-                                   style="padding: 7px;background: #dddddd;border-radius: 3px;font-size: 16px;cursor: pointer;">Select files</label>
-                            <input class="form-control form-control-sm" type="file" multiple id="formFileMultiple" name="uploadfiles" hidden onchange="this.form.submit()">
-                        </div>
-                    </form>
-                </div>
+                <form action="" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="button-upload">
+                        <label for="formFileMultiple" class="form-label btn-click-upload" name="upload-files">Load files</label>
+                        <input class="form-control form-control-sm" type="file" multiple id="formFileMultiple" name="uploadfiles" hidden onchange="this.form.submit()">
+                    </div>
+                </form>
             </div>
-<!--            <div class="file_print" style="background: #FEFEFE; border-radius:5px">-->
-<!--                {% if files %}-->
-<!--                    {% for file in files %}-->
-<!--                    <p>{{ file }}</p>-->
-<!--                    {% endfor %}-->
-<!--                {% endif %}-->
-<!--            </div>-->
-
-<!--            <div style="margin-top: 20px; width: 100%; height: 200px; overflow-y: scroll; background: #FEFEFE; border-radius:5px">-->
-<!--                <h6 style="margin:0 0 8px 0; padding:5px; text-decoration:underline;">Server files</h6>-->
-<!--                {% for file in allfiles %}-->
-<!--                <p style="text-align: left; margin-left: 15px;">{{ file }}</p>-->
-<!--                {% endfor %}-->
-<!--            </div>-->
         </div>
         <div class="first">
-            <h3>List of Well</h3>
+            <h3>Wells</h3>
         </div>
         <div class="second">
             <h3>Coordinates</h3>
@@ -46,8 +29,7 @@
     </div>
     <script src="https://d3js.org/d3.v4.js"></script>
     <script type="text/javascript">
-        var lists = "{{ files|safe }}"
-        console.log(lists)
+        var alldatas = {{ data|safe }};
     </script>
     <script src="{% static 'js/d3_script.js' %}"></script>
 

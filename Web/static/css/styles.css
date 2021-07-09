@@ -1,5 +1,11 @@
 body {
     background-color: #efefef;
+    height: 99vh;
+    overflow: hidden;
+}
+
+nav {
+    width: 628px!important;
 }
 
 .login-container {
@@ -33,12 +39,35 @@ body {
     flex-direction: row;
     justify-content: center;
     align-content: space-between;
+    position: relative;
+}
+
+.buttons, .first {
+    width: 195px;
+}
+
+.second {
+    width: 330px;
+}
+
+#multi {
+    position: relative;
+    top: -63px;
+    bottom: -30px;
 }
 
 .main > div {
     padding: 5px;
     border: 1px solid rgb(129, 129, 129);
     text-align: center;
+}
+
+
+.second div {
+    max-height: 85vh;
+    max-width:100%!important;
+    height: 100%;
+    overflow-y: scroll;
 }
 
 svg {
@@ -74,14 +103,20 @@ svg {
     margin: 0;
     padding: 0;
     text-decoration: underline;
+    font-size: 18px;
 }
 
-.first ul {
+.first ul, .buttons ul {
     list-style: none;
     text-align: left;
     padding: 0;
     margin: 10px;
 }
+
+.buttons ul {
+    margin-top: 25px;
+}
+
 
 .first ul li {
     padding: 5px 10px;
@@ -91,7 +126,15 @@ svg {
     cursor: pointer;
 }
 
-.first ul li:hover {
+.buttons ul li {
+    padding: 3px 5px;
+    font-size: 13px;
+    background-color: #5dc6ff24;
+    cursor: pointer;
+    margin: 5px;
+}
+
+.first ul li:hover, .buttons ul li:hover {
     background-color: #fff;
     transform: scale(1.07);
 }
@@ -126,16 +169,37 @@ td, th {
 }
 
 .content-center {
-    margin: 15px 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100%;
+    margin-top: 10px;
 }
 
-.buttons-container {
+.content-center form {
     display: flex;
-    flex-direction: column;
     justify-content: center;
+}
+
+.content-center form .button-upload {
+    background: #ced4da;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    padding: 7px;
+}
+
+.content-center form .button-upload:hover,
+.content-center form .button-upload label:hover {
+    cursor: pointer;
+    background-color: #ffffff;
+    color: #4b4b4b;
+    transform: scale(1.03);
+    transition: all 0.3s ease;
+}
+
+.content-center form .button-upload label {
+    font-size: 15px;
+    font-weight: bold;
+    margin: 0;
 }
 
 .buttons-container button {
@@ -146,19 +210,25 @@ td, th {
     border-radius: 5px;
 }
 
-.ddd {
-    display: flex;
-    flex-direction: column;
-}
-
-.ddd input {
-    display: inline-block;
-}
-
 .file_print {
     width: 100%;
     height: 200px;
     overflow-y: scroll;
     background: #FEFEFE;
     border-radius:5px;
+}
+
+
+@media only screen and (min-width: 1100px) {
+    .buttons, .first {
+        width: 195px;
+    }
+
+    .second {
+        width: 330px;
+    }
+
+    nav {
+        width: 628px!important;
+    }
 }
