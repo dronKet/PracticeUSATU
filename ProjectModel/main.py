@@ -100,6 +100,8 @@ class Window(QMainWindow):
         self.toolbar.addAction("Открыть").triggered.connect(self.load_project_file)
         self.toolbar.addAction("Создать").triggered.connect(self.create_project_file)
         self.toolbar.addAction("Добавить скважины").triggered.connect(self.load_new_wells)
+        self.toolbar.addAction("Векторный редактор").triggered.connect(self.load_new_wells)
+        self.toolbar.addAction("Растровый редактор").triggered.connect(self.load_new_wells)
         # self.toolbar.addAction("Сохранить план").triggered.connect()
 
         self.projectPath = None
