@@ -100,7 +100,7 @@ class Window(QMainWindow):
         self.toolbar.addAction("Открыть").triggered.connect(self.load_project_file)
         self.toolbar.addAction("Создать").triggered.connect(self.create_project_file)
         self.toolbar.addAction("Добавить скважины").triggered.connect(self.load_new_wells)
-        self.toolbar.addAction("Сохранить план").triggered.connect()
+        # self.toolbar.addAction("Сохранить план").triggered.connect()
 
         self.projectPath = None
 
@@ -146,22 +146,18 @@ class Window(QMainWindow):
         self.folderModel.setTable(self.folderTableName)
         self.folderModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.folderModel.select()
-        while self.folderModel.canFetchMore():
-            self.folderModel.fetchMore()
 
         self.wellModel = QSqlTableModel(None, self.db)
         self.wellModel.setTable(self.wellTableName)
         self.wellModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.wellModel.select()
-        while self.wellModel.canFetchMore():
-            self.wellModel.fetchMore()
 
         self.trajectoriesModel = QSqlTableModel(None, self.db)
         self.trajectoriesModel.setTable(self.trajectoriesTableName)
         self.trajectoriesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.trajectoriesModel.select()
-        while self.trajectoriesModel.canFetchMore():
-            self.trajectoriesModel.fetchMore()
+
+        self.fetch_more_rows_in_tables()
 
         self.treeModel = QStandardItemModel()
         self.treeModel.dataChanged.connect(self.on_data_changed)
@@ -181,7 +177,6 @@ class Window(QMainWindow):
 
                 trajectories_num_row_list = self.trajectoriesModel.match(self.trajectoriesModel.index(0, 0),
                                                                          Qt.EditRole, well_id, hits=-1)
-                print(trajectories_num_row_list)
                 coord = np.ndarray((0, 3))
                 for trajectories_num_row in trajectories_num_row_list:
                     x = self.trajectoriesModel.index(trajectories_num_row.row(), 1).data(Qt.EditRole)
@@ -210,6 +205,7 @@ class Window(QMainWindow):
         self.wellModel.submitAll()
         self.trajectoriesModel.submitAll()
         self.treeView.setUpdatesEnabled(True)
+        self.fetch_more_rows_in_tables()
 
     def create_model_container(self, name, container_id):
         container = WellContainerItem()
@@ -280,12 +276,21 @@ class Window(QMainWindow):
         well_idx_list = self.wellModel.match(self.wellModel.index(0, 1), Qt.EditRole, well_id, hits=-1)
         for well_idx in well_idx_list:
             self.wellModel.removeRow(well_idx.row())
-        trajectories_id_list = self.trajectoriesModel.match(self.trajectoriesModel.index(0, 1), Qt.EditRole, well_id,
+        trajectories_id_list = self.trajectoriesModel.match(self.trajectoriesModel.index(0, 0), Qt.EditRole, well_id,
                                                             hits=-1)
         for trajectories_id in trajectories_id_list:
             self.trajectoriesModel.removeRows(trajectories_id.row(), 1)
         self.wellModel.submitAll()
         self.trajectoriesModel.submitAll()
+        self.fetch_more_rows_in_tables()
+
+    def fetch_more_rows_in_tables(self):
+        while self.folderModel.canFetchMore():
+            self.folderModel.fetchMore()
+        while self.wellModel.canFetchMore():
+            self.wellModel.fetchMore()
+        while self.trajectoriesModel.canFetchMore():
+            self.trajectoriesModel.fetchMore()
 
     def on_data_changed(self, top_left, bottom_right, roles):
         if Qt.CheckStateRole in roles:
@@ -300,10 +305,18 @@ class Window(QMainWindow):
                     item.set_plot_item(plot_item, text_item)
                     self.plotWidget.addItem(plot_item)
                     self.plotWidget.addItem(text_item)
+                    icon = item.icon()
+                    pixmap = icon.pixmap(24, 24)
+                    #Нужно создать Item картинки, добавить удаление
                 else:
                     self.plotWidget.removeItem(item.plotItem)
                     self.plotWidget.removeItem(item.textItem)
                     item.set_plot_item(None, None)
+        if Qt.DecorationRole in roles:
+            item = self.treeModel.itemFromIndex(top_left)
+            if type(item) is WellItem:
+                pass
+                #Получение иконки
 
 
 if __name__ == '__main__':
