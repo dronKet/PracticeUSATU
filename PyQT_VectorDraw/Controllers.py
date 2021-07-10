@@ -163,7 +163,6 @@ class ControllerSelect(Controller):
 
     def mouse_release_handler(self, event):
         self.destination = event.pos()
-        print("hi")
         if self.destination != self.begin:
             self.main_window.external_area.fill(QColor(0, 0, 0, 0))
             selected_rectangle = [QColor(0, 0, 0), QColor(255, 255, 255), "rectangle", self.begin,

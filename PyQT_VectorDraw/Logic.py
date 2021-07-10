@@ -17,8 +17,8 @@ class VectorEditorWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.widget = DrawingScene()
-        self.main_area=self.widget.main_area
-        self.rect_size=self.widget.rect().size()
+        self.main_area = self.widget.main_area
+        self.rect_size = self.widget.rect().size()
         self.widget.add_functions(self.ui)
         # self.setCentralWidget(self.widget)
         scroll = QtWidgets.QScrollArea()
@@ -42,7 +42,7 @@ class DrawingScene(QWidget):
         self.excretion_coords = False
         self.main_area = QPixmap(self.rect().size())
         self.main_area.fill(Qt.white)
-        #self.painter=QPainter(self.main_area)
+        # self.painter=QPainter(self.main_area)
         self.external_area = QPixmap(self.rect().size())
         self.external_area.fill(QColor(0, 0, 0, 0))
         self.begin = QPoint()
@@ -59,8 +59,8 @@ class DrawingScene(QWidget):
         self.tools["delete"] = ControllerDelete(self)
         self.tools["copy/paste"] = ControllerCopyPaste(self)
         self.tools["cut"] = ControllerCut(self)
-        self.default_w=self.width()
-        self.default_h=self.height()
+        self.default_w = self.width()
+        self.default_h = self.height()
         self.shapes_op = ShapesOperations()
 
     def showdialog(self):
@@ -73,11 +73,11 @@ class DrawingScene(QWidget):
         label_h.move(25, 100)
         line_w = QSpinBox(dlg)
         line_h = QSpinBox(dlg)
-        line_w.setRange(1,5000)
+        line_w.setRange(1, 5000)
         line_h.setRange(1, 5000)
-        #line_w.setValue(self.width())
+        # line_w.setValue(self.width())
         line_w.setValue(self.main_area.width())
-        #line_h.setValue(self.height())
+        # line_h.setValue(self.height())
         line_h.setValue(self.main_area.height())
         line_w.move(100, 50)
         line_h.move(100, 100)
@@ -88,11 +88,11 @@ class DrawingScene(QWidget):
         button_default = QPushButton(dlg)
         button_default.setText("По умолчанию")
         button_default.move(100, 150)
-        #button_cancel = QPushButton(dlg)
-        #button_cancel.setText("Отмена")
-        #button_cancel.move(200, 100)
-        #button_cancel.clicked.connect(dlg.reject)
-       # button_ok.clicked.connect(dlg.accept)
+        # button_cancel = QPushButton(dlg)
+        # button_cancel.setText("Отмена")
+        # button_cancel.move(200, 100)
+        # button_cancel.clicked.connect(dlg.reject)
+        # button_ok.clicked.connect(dlg.accept)
         button_default.clicked.connect(lambda: self.change_scene_size(self.default_w, self.default_h))
         button_ok.clicked.connect(lambda: self.change_scene_size(line_w.value(), line_h.value()))
         dlg.setWindowTitle("Смена размера сцена")
@@ -220,7 +220,8 @@ class DrawingScene(QWidget):
             self.current_tool.mouse_move_handler(event)
 
     def mouseReleaseEvent(self, event):
-        self.current_tool.mouse_release_handler(event)
+        if event.button() == 1:
+            self.current_tool.mouse_release_handler(event)
 
 
 if __name__ == "__main__":

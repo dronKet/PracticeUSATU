@@ -58,7 +58,6 @@ class RasterEditor(GraphicsEditor):
 
     def load_data_from_bytearray(self, byte_array):
         self.project_widget.central_widget.drawing_surface.loadFromData(byte_array)
-        print("something")
         self.project_widget.update()
 
     def load_data_to_bytearray(self):
