@@ -7,6 +7,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from VectorRasterEditors.GraphicsEditors import VectorEditor
+from VectorRasterEditors.GraphicsEditors import RasterEditor
+
+QCoreApplication.addLibraryPath('../venv/Lib/site-packages/PyQt5/Qt5/plugins')
 
 
 def read_file(file):
@@ -76,9 +80,14 @@ class Window(QMainWindow):
         self.treeView.setHeaderHidden(True)
         self.deleteWell = QAction("Удалить")
         self.deleteWell.triggered.connect(self.delete_selected_well)
+        self.addWellIcon = QAction("Добавить иконку")
+        self.addWellIcon.triggered.connect(self.load_icon)
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.show_context_menu)
         self.treeModel = None
+
+        self.icon_path = None
+
 
         self.db = None
         self.tableView = QTableView(self)
@@ -95,13 +104,12 @@ class Window(QMainWindow):
         splitter.addWidget(self.treeView)
         splitter.addWidget(self.tableView)
         splitter.addWidget(self.plotWidget)
-
         self.toolbar = self.addToolBar("")
         self.toolbar.addAction("Открыть").triggered.connect(self.load_project_file)
         self.toolbar.addAction("Создать").triggered.connect(self.create_project_file)
         self.toolbar.addAction("Добавить скважины").triggered.connect(self.load_new_wells)
-        self.toolbar.addAction("Векторный редактор").triggered.connect(self.load_new_wells)
-        self.toolbar.addAction("Растровый редактор").triggered.connect(self.load_new_wells)
+        self.toolbar.addAction("Векторный редактор").triggered.connect(VectorEditor)
+        self.toolbar.addAction("Растровый редактор").triggered.connect(RasterEditor)
         # self.toolbar.addAction("Сохранить план").triggered.connect()
 
         self.projectPath = None
@@ -254,9 +262,23 @@ class Window(QMainWindow):
             record.setValue("Z", float(Z))
             self.trajectoriesModel.insertRecord(-1, record)
 
+    def load_icon(self):
+        well_idx = self.treeView.currentIndex()
+        well = self.treeModel.itemFromIndex(well_idx)
+        file = QFileDialog.getOpenFileName(self, "", "", "*.png;;*.jpg")
+        self.icon_path = file
+
+        if not self.icon_path == '':
+            l = self.icon_path[0].split('.')
+            # pixmap=QPixmap()
+            # pixmap.load(self.icon_path[0], l[-1])
+            icon = QIcon(self.icon_path[0])
+            well.setIcon(icon)
+
     def show_context_menu(self, position):
         _contextMenu = QMenu()
         _contextMenu.addAction(self.deleteWell)
+        _contextMenu.addAction(self.addWellIcon)
         self.deleteWell.setEnabled(False)
         idx = self.treeView.currentIndex()
 
@@ -309,7 +331,7 @@ class Window(QMainWindow):
                     self.plotWidget.addItem(text_item)
                     icon = item.icon()
                     pixmap = icon.pixmap(24, 24)
-                    #Нужно создать Item картинки, добавить удаление
+                    # Нужно создать Item картинки, добавить удаление
                 else:
                     self.plotWidget.removeItem(item.plotItem)
                     self.plotWidget.removeItem(item.textItem)
@@ -318,7 +340,7 @@ class Window(QMainWindow):
             item = self.treeModel.itemFromIndex(top_left)
             if type(item) is WellItem:
                 pass
-                #Получение иконки
+                # Получение иконки
 
 
 if __name__ == '__main__':
