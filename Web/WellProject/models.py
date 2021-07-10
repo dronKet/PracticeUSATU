@@ -3,11 +3,16 @@ from django.db import models
 
 # Create your models here.
 class FolderModel(models.Model):
+    folder_identifier = models.CharField(max_length=200)
     folder_name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.folder_name
 
 
 class WellModel(models.Model):
     folder = models.ForeignKey(FolderModel, on_delete=models.CASCADE)
+    well_identifier = models.CharField(max_length=200)
     well_name = models.CharField(max_length=200)
 
     def __str__(self):
@@ -22,8 +27,8 @@ class CoordinateModel(models.Model):
     Z = models.FloatField()
 
     def __str__(self):
-        return 'Well ID: ' + str(self.well.id) + ', name: ' + self.well.name + \
-               ', sequence: ' + str(self.sequence_number)
+        return 'Well ID: ' + str(self.well.id) + ', name: ' + self.well.well_name + \
+              ', sequence: ' + str(self.sequence_number)
 
 
 class UploadFileModel(models.Model):

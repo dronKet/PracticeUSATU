@@ -1,25 +1,14 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from Model import *
-from Delegate import *
+from TrajectoryTable.Model import Model, genData
+from TrajectoryTable.Delegate import TableDelegate
 
 
 class TableTrajectory(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.model = Model(self)
-        self.model.setWellTrajectory(genData(), 'well1')
-        self.model.setWellTrajectory(genData(), 'well2')
-        self.model.setWellTrajectory(genData(), 'well3')
-        self.model.setWellTrajectory(genData(), 'well4')
-
         self.view = QTableView(self)
-        self.view.setModel(self.model)
-        self.view.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.delegate = TableDelegate(self.view)
-        self.view.setItemDelegate(self.delegate)
-        self.view.hideColumn(0)
 
         self.firstColorButton = QPushButton(self)
         self.firstColorButton.setStyleSheet('QPushButton {background-color: ' + QColor('blue').name() +
@@ -31,8 +20,8 @@ class TableTrajectory(QWidget):
                                              '; border: none;}')
         self.secondColorButton.clicked.connect(self.clickedSecond)
 
-        labelWellName = QLabel('TestName')
-        labelWellName.setContentsMargins(0, 0, 0, 0)
+        self.labelWellName = QLabel('Скважина:')
+        self.labelWellName.setContentsMargins(0, 0, 0, 0)
         labelPalletName = QLabel('Палитра:')
         labelPalletName.setContentsMargins(0, 0, 0, 0)
 
@@ -49,7 +38,7 @@ class TableTrajectory(QWidget):
         hboxColorSecond.setSpacing(0)
 
         vbox = QVBoxLayout()
-        vbox.addWidget(labelWellName)
+        vbox.addWidget(self.labelWellName)
         vbox.addWidget(labelPalletName)
         vbox.addLayout(hboxColorFirst)
         vbox.addLayout(hboxColorSecond)
@@ -61,10 +50,10 @@ class TableTrajectory(QWidget):
         color = QColorDialog().getColor()
         if color.isValid():
             self.firstColorButton.setStyleSheet('QPushButton {background-color: ' + color.name() + '; border: none;}')
-            self.delegate.setFirstColor(color)
+            self.view.itemDelegate().setFirstColor(color)
 
     def clickedSecond(self):
         color = QColorDialog().getColor()
         if color.isValid():
             self.secondColorButton.setStyleSheet('QPushButton {background-color: ' + color.name() + '; border: none;}')
-            self.delegate.setSecondColor(color)
+            self.view.itemDelegate().setSecondColor(color)

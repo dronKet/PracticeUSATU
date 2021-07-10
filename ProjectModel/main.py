@@ -41,8 +41,8 @@ class WellItem(QStandardItem):
         self.plotItem = plot_item
         self.textItem = text_item
 
-    def set_id(self, id):
-        self.id = id
+    def set_id(self, well_id):
+        self.id = well_id
 
     def get_data(self):
         return self.data
@@ -57,8 +57,8 @@ class WellContainerItem(QStandardItem):
         self.id = None
         self.setCheckable(False)
 
-    def set_id(self, id):
-        self.id = id
+    def set_id(self, container_id):
+        self.id = container_id
 
     def get_id(self):
         return self.id
@@ -100,6 +100,7 @@ class Window(QMainWindow):
         self.toolbar.addAction("Открыть").triggered.connect(self.load_project_file)
         self.toolbar.addAction("Создать").triggered.connect(self.create_project_file)
         self.toolbar.addAction("Добавить скважины").triggered.connect(self.load_new_wells)
+        # self.toolbar.addAction("Сохранить план").triggered.connect()
 
         self.projectPath = None
 
@@ -126,13 +127,6 @@ class Window(QMainWindow):
         self.connect_database()
         self.create_table_model()
         self.load_table_models_from_db()
-
-    def load_table_models_from_db(self):
-        row_count = self.folderModel.rowCount()
-        for i in range(row_count):
-            folder_id = self.folderModel.index(i, 0).data(Qt.EditRole)
-            folder_name = self.folderModel.index(i, 1).data(Qt.EditRole)
-            self.create_model_container(name=folder_name, id=folder_id)
 
     def connect_database(self):
         if self.projectPath:
@@ -163,9 +157,33 @@ class Window(QMainWindow):
         self.trajectoriesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.trajectoriesModel.select()
 
+        self.fetch_more_rows_in_tables()
+
         self.treeModel = QStandardItemModel()
         self.treeModel.dataChanged.connect(self.on_data_changed)
         self.treeView.setModel(self.treeModel)
+
+    def load_table_models_from_db(self):
+        row_count = self.folderModel.rowCount()
+        for i in range(row_count):
+            folder_id = self.folderModel.index(i, 0).data(Qt.EditRole)
+            folder_name = self.folderModel.index(i, 1).data(Qt.EditRole)
+            container = self.create_model_container(folder_name, folder_id)
+
+            well_num_row_list = self.wellModel.match(self.wellModel.index(0, 0), Qt.EditRole, folder_id, hits=-1)
+            for well_num_row in well_num_row_list:
+                well_id = self.wellModel.index(well_num_row.row(), 1).data(Qt.EditRole)
+                well_name = self.wellModel.index(well_num_row.row(), 2).data(Qt.EditRole)
+
+                trajectories_num_row_list = self.trajectoriesModel.match(self.trajectoriesModel.index(0, 0),
+                                                                         Qt.EditRole, well_id, hits=-1)
+                coord = np.ndarray((0, 3))
+                for trajectories_num_row in trajectories_num_row_list:
+                    x = self.trajectoriesModel.index(trajectories_num_row.row(), 1).data(Qt.EditRole)
+                    y = self.trajectoriesModel.index(trajectories_num_row.row(), 2).data(Qt.EditRole)
+                    z = self.trajectoriesModel.index(trajectories_num_row.row(), 3).data(Qt.EditRole)
+                    coord = np.append(coord, [[x, y, z]], axis=0)
+                self.create_model_well(container, well_name, coord, well_id)
 
     def load_new_wells(self):
         files, tmp = QFileDialog.getOpenFileNames(None, "Выберите файлы")
@@ -180,56 +198,59 @@ class Window(QMainWindow):
         self.create_db_container(container_name, container_id)
         for file in files:
             name, coord = read_file(file)
-            self.create_well(container, name, coord)
+            well_id = str(uuid.uuid4())
+            self.create_model_well(container, name, coord, well_id)
+            self.create_db_well(container, name, coord, well_id)
         self.folderModel.submitAll()
         self.wellModel.submitAll()
         self.trajectoriesModel.submitAll()
         self.treeView.setUpdatesEnabled(True)
+        self.fetch_more_rows_in_tables()
 
-    def create_model_container(self, name, id):
+    def create_model_container(self, name, container_id):
         container = WellContainerItem()
         container.setText(name)
-        container.set_id(id)
+        container.set_id(container_id)
         self.treeModel.appendRow(container)
-
         return container
 
-    def create_db_container(self, name, id):
+    def create_db_container(self, name, container_id):
         record = QSqlRecord()
         record.append(QSqlField("IdFolder"))
         record.append(QSqlField("Name"))
-        record.setValue("IdFolder", id)
+        record.setValue("IdFolder", container_id)
         record.setValue("Name", name)
         self.folderModel.insertRecord(-1, record)
 
-    def create_well(self, container_item, name, coord):
+    def create_model_well(self, container_item, name, coord, well_id):
         well = WellItem()
         well.setText(name)
         well.set_data(coord)
+        well.set_id(well_id)
         container_item.appendRow(well)
+        return well
 
+    def create_db_well(self, container_item, name, coord, well_id):
         record = QSqlRecord()
         record.append(QSqlField("IdFolder"))
         record.append(QSqlField("IdWell"))
         record.append(QSqlField("Name"))
         record.setValue("IdFolder", container_item.get_id())
-        record.setValue("IdWell", well.get_id())
-        record.setValue("Name", well.text())
+        record.setValue("IdWell", well_id)
+        record.setValue("Name", name)
         self.wellModel.insertRecord(-1, record)
 
-        for X, Y, Z in well.get_data():
+        for X, Y, Z in coord:
             record = QSqlRecord()
             record.append(QSqlField("IdWell"))
             record.append(QSqlField("X"))
             record.append(QSqlField("Y"))
             record.append(QSqlField("Z"))
-            record.setValue("IdWell", well.get_id())
-            record.setValue("X", X)
-            record.setValue("Y", Y)
-            record.setValue("Z", Z)
+            record.setValue("IdWell", well_id)
+            record.setValue("X", float(X))
+            record.setValue("Y", float(Y))
+            record.setValue("Z", float(Z))
             self.trajectoriesModel.insertRecord(-1, record)
-
-        return well
 
     def show_context_menu(self, position):
         _contextMenu = QMenu()
@@ -252,8 +273,24 @@ class Window(QMainWindow):
         self.plotWidget.removeItem(well.textItem)
         well.parent().removeRow(well.row())
 
-        id_list = self.wellModel.match(self.wellModel.index(0, 1), Qt.EditRole, well_id)
-        self.wellModel.removeRow(id_list[0].row())
+        well_idx_list = self.wellModel.match(self.wellModel.index(0, 1), Qt.EditRole, well_id, hits=-1)
+        for well_idx in well_idx_list:
+            self.wellModel.removeRow(well_idx.row())
+        trajectories_id_list = self.trajectoriesModel.match(self.trajectoriesModel.index(0, 0), Qt.EditRole, well_id,
+                                                            hits=-1)
+        for trajectories_id in trajectories_id_list:
+            self.trajectoriesModel.removeRows(trajectories_id.row(), 1)
+        self.wellModel.submitAll()
+        self.trajectoriesModel.submitAll()
+        self.fetch_more_rows_in_tables()
+
+    def fetch_more_rows_in_tables(self):
+        while self.folderModel.canFetchMore():
+            self.folderModel.fetchMore()
+        while self.wellModel.canFetchMore():
+            self.wellModel.fetchMore()
+        while self.trajectoriesModel.canFetchMore():
+            self.trajectoriesModel.fetchMore()
 
     def on_data_changed(self, top_left, bottom_right, roles):
         if Qt.CheckStateRole in roles:
@@ -268,10 +305,18 @@ class Window(QMainWindow):
                     item.set_plot_item(plot_item, text_item)
                     self.plotWidget.addItem(plot_item)
                     self.plotWidget.addItem(text_item)
+                    icon = item.icon()
+                    pixmap = icon.pixmap(24, 24)
+                    #Нужно создать Item картинки, добавить удаление
                 else:
                     self.plotWidget.removeItem(item.plotItem)
                     self.plotWidget.removeItem(item.textItem)
                     item.set_plot_item(None, None)
+        if Qt.DecorationRole in roles:
+            item = self.treeModel.itemFromIndex(top_left)
+            if type(item) is WellItem:
+                pass
+                #Получение иконки
 
 
 if __name__ == '__main__':
