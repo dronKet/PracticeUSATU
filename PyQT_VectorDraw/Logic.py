@@ -42,7 +42,7 @@ class DrawingScene(QWidget):
         self.excretion_coords = False
         self.main_area = QPixmap(self.rect().size())
         self.main_area.fill(Qt.white)
-        self.painter=QPainter(self.main_area)
+        #self.painter=QPainter(self.main_area)
         self.external_area = QPixmap(self.rect().size())
         self.external_area.fill(QColor(0, 0, 0, 0))
         self.begin = QPoint()

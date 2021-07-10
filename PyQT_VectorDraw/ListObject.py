@@ -54,7 +54,14 @@ class ShapeObject:
         return counter
 
     def in_shape(self, other_shape):
+        print(other_shape.upper_x > self.upper_x)
         if other_shape.upper_x < self.upper_x and other_shape.upper_y < self.upper_y and other_shape.lower_x > self.lower_x and other_shape.lower_y > self.lower_y:
+            return True
+        elif other_shape.upper_x > self.upper_x and other_shape.upper_y < self.upper_y and other_shape.lower_x < self.lower_x and other_shape.lower_y > self.lower_y:
+            return True
+        elif other_shape.upper_x < self.upper_x and other_shape.upper_y > self.upper_y and other_shape.lower_x > self.lower_x and other_shape.lower_y < self.lower_y:
+            return True
+        elif other_shape.upper_x > self.upper_x and other_shape.upper_y > self.upper_y and other_shape.lower_x < self.lower_x and other_shape.lower_y < self.lower_y:
             return True
         return False
 

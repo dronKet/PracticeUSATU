@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     app = QApplication([])
     window = VectorEditor()
-    window.load_data_to_bytearray()
-    window.load_data_from_bytearray()
+    #window.load_data_to_bytearray()
+    #window.load_data_from_bytearray()
     window.show()
     app.exec()
