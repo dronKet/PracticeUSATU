@@ -42,7 +42,7 @@ class ControllerCopyPaste(Controller):
         if self.copied_shapes_list:
             self.shapes_op.remove_excretion(self.main_window.shapes)
             if self.is_first_paste:
-                self.main_window.shapes += self.copied_shapes_list.copy()
+                self.main_window.shapes = self.copied_shapes_list + self.main_window.shapes
                 self.is_first_paste = False
             self.shapes_op.draw_only_shapes_array(self.main_window.shapes, self.main_window,
                                                   QPainter(self.main_window.main_area))
@@ -129,6 +129,10 @@ class ControllerMove(Controller):
             if shape.is_selected:
                 shape.lower_right_point += shape.point
                 shape.upper_left_point += shape.point
+                shape.upper_x = shape.upper_left_point.x()
+                shape.upper_y = shape.upper_left_point.y()
+                shape.lower_x = shape.lower_right_point.x()
+                shape.lower_y = shape.lower_right_point.y()
                 shape.point = QPoint(0, 0)
 
 

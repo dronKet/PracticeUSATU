@@ -56,6 +56,14 @@ class ShapeObject:
     def in_shape(self, other_shape):
         if other_shape.upper_x < self.upper_x and other_shape.upper_y < self.upper_y and other_shape.lower_x > self.lower_x and other_shape.lower_y > self.lower_y:
             return True
+        elif other_shape.upper_x > self.upper_x and other_shape.upper_y < self.upper_y and other_shape.lower_x < self.lower_x and other_shape.lower_y > self.lower_y:
+            return True
+        elif other_shape.upper_x < self.upper_x and other_shape.upper_y > self.upper_y \
+and other_shape.lower_x > self.lower_x and other_shape.lower_y < self.lower_y and other_shape.upper_y>self.lower_y and other_shape.lower_y<self.upper_y:
+            return True
+        elif other_shape.upper_x > self.upper_x and other_shape.upper_y > self.upper_y \
+        and other_shape.lower_x < self.lower_x and other_shape.lower_y < self.lower_y and other_shape.upper_y > self.lower_y and other_shape.lower_y < self.upper_y:
+            return True
         return False
 
     def copy(self):
@@ -110,6 +118,10 @@ class ShapesOperations():
         for shape in shapes_array:
             shape.upper_left_point = shape.upper_left_point + point
             shape.lower_right_point = shape.lower_right_point + point
+            shape.upper_x = shape.upper_left_point.x()
+            shape.upper_y = shape.upper_left_point.y()
+            shape.lower_x = shape.lower_right_point.x()
+            shape.lower_y = shape.lower_right_point.y()
 
     def delete_shapes_from_array(self,shapes_array):
         temp_shapes_array=list()

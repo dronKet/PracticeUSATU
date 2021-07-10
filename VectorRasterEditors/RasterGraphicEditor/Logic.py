@@ -103,6 +103,10 @@ class SceneLogic(QWidget):
     def showdialog(self):
         dlg = QDialog()
         dlg.resize(300, 150)
+        windowFlag=0
+        windowFlag |= Qt.CustomizeWindowHint
+        windowFlag |= Qt.WindowCloseButtonHint
+        dlg.setWindowFlags(windowFlag)
         label_h = QLabel("Ширина", dlg)
         label_w = QLabel("Длина", dlg)
         label_h.move(25, 25)
