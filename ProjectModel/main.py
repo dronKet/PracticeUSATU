@@ -9,6 +9,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from VectorRasterEditors.GraphicsEditors import VectorEditor
 from VectorRasterEditors.GraphicsEditors import RasterEditor
+from TrajectoryTable.Window import TableTrajectory
+from TrajectoryTable.Model import Model
+from TrajectoryTable.Delegate import TableDelegate
 
 QCoreApplication.addLibraryPath('../venv/Lib/site-packages/PyQt5/Qt5/plugins')
 
@@ -88,9 +91,8 @@ class Window(QMainWindow):
 
         self.icon_path = None
 
-
         self.db = None
-        self.tableView = QTableView(self)
+        self.tableView = TableTrajectory(self)
         self.folderModel = None
         self.folderTableName = "Folders"
         self.wellModel = None
@@ -162,16 +164,26 @@ class Window(QMainWindow):
         self.wellModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.wellModel.select()
 
-        self.trajectoriesModel = QSqlTableModel(None, self.db)
+        self.trajectoriesModel = Model(parent=None, db=self.db)
         self.trajectoriesModel.setTable(self.trajectoriesTableName)
         self.trajectoriesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.trajectoriesModel.select()
+        while self.trajectoriesModel.canFetchMore():
+            self.trajectoriesModel.fetchMore()
+
+        self.tableView.view.setModel(self.trajectoriesModel)
+        self.tableView.view.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.tableView.view.hideColumn(0)
+        self.tableView.view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        delegate = TableDelegate(self.tableView.view)
+        self.tableView.view.setItemDelegate(delegate)
 
         self.fetch_more_rows_in_tables()
 
         self.treeModel = QStandardItemModel()
         self.treeModel.dataChanged.connect(self.on_data_changed)
         self.treeView.setModel(self.treeModel)
+        self.treeView.clicked.connect(self.on_clicked)
 
     def load_table_models_from_db(self):
         row_count = self.folderModel.rowCount()
@@ -187,6 +199,7 @@ class Window(QMainWindow):
 
                 trajectories_num_row_list = self.trajectoriesModel.match(self.trajectoriesModel.index(0, 0),
                                                                          Qt.EditRole, well_id, hits=-1)
+                self.trajectoriesModel.selectWellTrajectory("")
                 coord = np.ndarray((0, 3))
                 for trajectories_num_row in trajectories_num_row_list:
                     x = self.trajectoriesModel.index(trajectories_num_row.row(), 1).data(Qt.EditRole)
@@ -214,6 +227,7 @@ class Window(QMainWindow):
         self.folderModel.submitAll()
         self.wellModel.submitAll()
         self.trajectoriesModel.submitAll()
+        self.trajectoriesModel.selectWellTrajectory("")
         self.treeView.setUpdatesEnabled(True)
         self.fetch_more_rows_in_tables()
 
@@ -341,6 +355,13 @@ class Window(QMainWindow):
             if type(item) is WellItem:
                 pass
                 # Получение иконки
+
+    def on_clicked(self, index):
+        well = self.treeModel.itemFromIndex(index)
+        well_id = well.get_id()
+        if type(well) is WellItem:
+            self.trajectoriesModel.selectWellTrajectory(well_id)
+            self.tableView.labelWellName.setText('Скважина: ' + well.text())
 
 
 if __name__ == '__main__':

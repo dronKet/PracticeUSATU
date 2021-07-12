@@ -36,7 +36,7 @@ class TableDelegate(QStyledItemDelegate):
             return None
         editor = QDoubleSpinBox(parent)
         editor.setFrame(False)
-        editor.setMinimum(0)
+        editor.setMinimum(float('-inf'))
         editor.setMaximum(float('inf'))
         editor.setDecimals(16)
         return editor

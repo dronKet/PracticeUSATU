@@ -44,6 +44,12 @@ class Model(QSqlTableModel):
         self.submitAll()
         self.setFilter(f'IdWell="{idWell}"')
 
+    def selectWellTrajectory(self, idWell):
+        self.setFilter(f'IdWell="{idWell}"')
+        self.on_dataChanged(self.index(0, 1), self.index(self.rowCount(), 1), roles=[])
+        self.on_dataChanged(self.index(0, 2), self.index(self.rowCount(), 2), roles=[])
+        self.on_dataChanged(self.index(0, 3), self.index(self.rowCount(), 3), roles=[])
+
     def on_dataChanged(self, topLeft, bottomRight, roles):
         if topLeft.column() != 0:
             column = topLeft.column() - 1
