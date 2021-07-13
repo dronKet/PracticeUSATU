@@ -25,11 +25,48 @@
         <div class="second">
             <h3>Coordinates</h3>
         </div>
-        <div id="multi"></div>
+        <div id="multi">
+<!--            <div class="delete_elements">-->
+<!--                <input type="button" class="button" value="Delete selected well" style="display: none;">-->
+<!--                <input type="button" class="button" value="Delete selected folder" style="display: none;">-->
+<!--            </div>-->
+        </div>
     </div>
     <script src="https://d3js.org/d3.v4.js"></script>
     <script type="text/javascript">
         var alldatas = {{ data|safe }};
+        var minmax = function(datas) {
+            var minx = 0, miny = 0, maxx = 0, maxy = 0;
+            minsXTab = []
+            minsYTab = []
+            maxsXTab = []
+            maxsYTab = []
+            datas.forEach(function(d, i){
+                d.files.forEach(function(dd, i){
+                    let min_x = dd['coordinates'][0].x, max_x = dd['coordinates'][0].x;
+                    let min_y = dd['coordinates'][0].y, max_y = dd['coordinates'][0].y;
+                    for (let i = 1, len=dd['coordinates'].length; i < len; i++) {
+                         let v1 = dd['coordinates'][i].x;
+                         let v2 = dd['coordinates'][i].y;
+                         min_x = (v1 < min_x) ? v1 : min_x;
+                         max_x = (v1 > max_x) ? v1 : max_x;
+                         min_y = (v2 < min_y) ? v2 : min_y;
+                         max_y = (v2 > max_y) ? v2 : max_y;
+                    }
+                    minsXTab.push(min_x)
+                    maxsXTab.push(max_x)
+                    minsYTab.push(min_y)
+                    maxsYTab.push(max_y)
+                })
+            })
+
+            minx = Math.min(...minsXTab)
+            maxx = Math.max(...maxsXTab)
+            miny = Math.min(...minsYTab)
+            maxy = Math.max(...maxsYTab)
+
+            return [minx - 100, maxx + 100, miny - 100, maxy + 100]
+        }
     </script>
     <script src="{% static 'js/d3_script.js' %}"></script>
 

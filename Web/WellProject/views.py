@@ -1,6 +1,7 @@
 import datetime
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from pathlib import Path
 import uuid
 from ProjectModel.main import read_file
@@ -13,8 +14,6 @@ from .models import WellModel, CoordinateModel, FolderModel, UploadFileModel
 # Create your views here.
 @login_required(login_url='login')
 def index(request):
-    # data = json.dumps(dataset)
-
     # processing uploaded data
     directory = Path(__file__).resolve().parent.parent / 'media'
     print(directory)
